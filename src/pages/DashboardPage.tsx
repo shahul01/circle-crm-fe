@@ -29,6 +29,9 @@ import {
   TrendingUp,
   Activity,
 } from 'lucide-react';
+import { LeadPipelineChart } from '@/components/dashboard/lead-pipeline-chart';
+import { TaskStatusChart } from '@/components/dashboard/task-status-chart';
+import { CustomerGrowthChart } from '@/components/dashboard/customer-growth-chart';
 
 function StatCard({
   title,
@@ -113,8 +116,38 @@ function DashboardPage() {
         />
       </div>
 
+      {/* Charts */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Lead Pipeline</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <LeadPipelineChart />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Task Status</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <TaskStatusChart />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Customer Growth</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <CustomerGrowthChart />
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Recent Customers & Activities */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Recent Customers */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
@@ -154,7 +187,6 @@ function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Recent Activities */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
@@ -179,7 +211,7 @@ function DashboardPage() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-sm text-foreground">{a.action}</p>
-                      <p className="text-xs text-muted-foreground truncate">
+                      <p className="truncate text-xs text-muted-foreground">
                         {a.entityName}
                       </p>
                       <p className="text-xs text-muted-foreground">
