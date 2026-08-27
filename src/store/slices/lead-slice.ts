@@ -135,6 +135,8 @@ export const selectLeadSort = (state: { leads: LeadState }) => ({
 });
 export const selectLeadPage = (state: { leads: LeadState }) =>
   state.leads.ui.page;
+export const selectSelectedLeadIds = (state: { leads: LeadState }) =>
+  state.leads.ui.selectedIds;
 
 export const selectFilteredLeads = (state: { leads: LeadState }) => {
   const { entities, ids, ui } = state.leads;
