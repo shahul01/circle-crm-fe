@@ -4,6 +4,8 @@ import AppLayout from '@/layouts/AppLayout';
 import ProtectedRoute from './ProtectedRoute';
 import LoginPage from '@/pages/LoginPage';
 import DashboardPage from '@/pages/DashboardPage';
+import CustomerListPage from '@/pages/customers/customer-list-page';
+import CustomerDetailPage from '@/pages/customers/customer-detail-page';
 import NotFoundPage from '@/pages/NotFoundPage';
 import { ToastContainer } from '@/lib/components';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
@@ -19,12 +21,10 @@ function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public */}
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<LoginPage />} />
         </Route>
 
-        {/* Protected */}
         <Route
           element={
             <ProtectedRoute>
@@ -33,31 +33,20 @@ function AppRoutes() {
           }
         >
           <Route path="/" element={<DashboardPage />} />
-          <Route path="/customers/*" element={<CustomerRoutes />} />
+          <Route path="/customers" element={<CustomerListPage />} />
+          <Route path="/customers/:id" element={<CustomerDetailPage />} />
           <Route path="/leads/*" element={<LeadRoutes />} />
           <Route path="/tasks/*" element={<TaskRoutes />} />
         </Route>
 
-        {/* Catch-all */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
 
-      {/* Global toast */}
       <ToastContainer
         toasts={notifications}
         onDismiss={(id) => dispatch(dismissNotification(id))}
       />
     </BrowserRouter>
-  );
-}
-
-// Lazy route stubs — Phase 4-7 will replace these
-function CustomerRoutes() {
-  return (
-    <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-foreground">Customers</h2>
-      <p className="text-sm text-muted-foreground">Coming in Phase 5</p>
-    </div>
   );
 }
 
