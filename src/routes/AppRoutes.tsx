@@ -6,6 +6,7 @@ import LoginPage from '@/pages/LoginPage';
 import DashboardPage from '@/pages/DashboardPage';
 import CustomerListPage from '@/pages/customers/customer-list-page';
 import CustomerDetailPage from '@/pages/customers/customer-detail-page';
+import LeadListPage from '@/pages/leads/lead-list-page';
 import NotFoundPage from '@/pages/NotFoundPage';
 import { ToastContainer } from '@/lib/components';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
@@ -35,7 +36,7 @@ function AppRoutes() {
           <Route path="/" element={<DashboardPage />} />
           <Route path="/customers" element={<CustomerListPage />} />
           <Route path="/customers/:id" element={<CustomerDetailPage />} />
-          <Route path="/leads/*" element={<LeadRoutes />} />
+          <Route path="/leads" element={<LeadListPage />} />
           <Route path="/tasks/*" element={<TaskRoutes />} />
         </Route>
 
@@ -47,15 +48,6 @@ function AppRoutes() {
         onDismiss={(id) => dispatch(dismissNotification(id))}
       />
     </BrowserRouter>
-  );
-}
-
-function LeadRoutes() {
-  return (
-    <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-foreground">Leads</h2>
-      <p className="text-sm text-muted-foreground">Coming in Phase 6</p>
-    </div>
   );
 }
 

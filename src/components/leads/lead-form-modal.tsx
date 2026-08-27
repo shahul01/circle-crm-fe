@@ -1,0 +1,214 @@
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { leadSchema, LEAD_STATUS_OPTIONS, type LeadForm } from '@/schemas/lead';
+import { EMPLOYEES } from '@/services/employees';
+import { useAppDispatch } from '@/store/hooks';
+import { addLead, updateLead } from '@/store/slices/lead-slice';
+import { addNotification } from '@/store/slices/notification-slice';
+import type { Lead } from '@/types';
+import {
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalTitle,
+  ModalDescription,
+  ModalFooter,
+  ModalClose,
+  Button,
+  Input,
+  Label,
+} from '@/lib/components';
+
+interface LeadFormModalProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  lead?: Lead | null;
+}
+
+export function LeadFormModal({
+  open,
+  onOpenChange,
+  lead,
+}: LeadFormModalProps) {
+  const dispatch = useAppDispatch();
+  const isEditing = !!lead;
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<LeadForm>({
+    resolver: zodResolver(leadSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      phone: '',
+      company: '',
+      status: 'New',
+      assignedEmployeeId: '',
+    },
+  });
+
+  useEffect(() => {
+    if (open) {
+      if (lead) {
+        reset({
+          name: lead.name,
+          email: lead.email,
+          phone: lead.phone,
+          company: lead.company,
+          status: lead.status,
+          assignedEmployeeId: lead.assignedEmployeeId,
+        });
+      } else {
+        reset({
+          name: '',
+          email: '',
+          phone: '',
+          company: '',
+          status: 'New',
+          assignedEmployeeId: '',
+        });
+      }
+    }
+  }, [open, lead, reset]);
+
+  const onSubmit = (data: LeadForm) => {
+    if (isEditing && lead) {
+      dispatch(updateLead({ id: lead.id, changes: data }));
+      dispatch(
+        addNotification(
+          'Lead updated',
+          `${data.name} has been updated.`,
+          'success'
+        )
+      );
+    } else {
+      dispatch(
+        addLead({
+          id: `lead-${Date.now()}`,
+          ...data,
+          createdAt: new Date().toISOString(),
+        })
+      );
+      dispatch(
+        addNotification(
+          'Lead added',
+          `${data.name} has been created.`,
+          'success'
+        )
+      );
+    }
+    onOpenChange(false);
+  };
+
+  return (
+    <Modal open={open} onOpenChange={onOpenChange}>
+      <ModalContent className="sm:max-w-lg">
+        <ModalHeader>
+          <ModalTitle>{isEditing ? 'Edit Lead' : 'Add Lead'}</ModalTitle>
+          <ModalDescription>
+            {isEditing
+              ? 'Update the lead details below.'
+              : 'Fill in the details to add a new lead.'}
+          </ModalDescription>
+        </ModalHeader>
+
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="name">Name</Label>
+              <Input id="name" error={!!errors.name} {...register('name')} />
+              {errors.name && (
+                <p className="text-xs text-destructive">
+                  {errors.name.message}
+                </p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                error={!!errors.email}
+                {...register('email')}
+              />
+              {errors.email && (
+                <p className="text-xs text-destructive">
+                  {errors.email.message}
+                </p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone</Label>
+              <Input id="phone" error={!!errors.phone} {...register('phone')} />
+              {errors.phone && (
+                <p className="text-xs text-destructive">
+                  {errors.phone.message}
+                </p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="company">Company</Label>
+              <Input
+                id="company"
+                error={!!errors.company}
+                {...register('company')}
+              />
+              {errors.company && (
+                <p className="text-xs text-destructive">
+                  {errors.company.message}
+                </p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="status">Status</Label>
+              <select
+                id="status"
+                className="flex h-9 w-full rounded-lg border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                {...register('status')}
+              >
+                {LEAD_STATUS_OPTIONS.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="assignedEmployeeId">Assigned Employee</Label>
+              <select
+                id="assignedEmployeeId"
+                className="flex h-9 w-full rounded-lg border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                {...register('assignedEmployeeId')}
+              >
+                <option value="">Select employee</option>
+                {EMPLOYEES.map((e) => (
+                  <option key={e.id} value={e.id}>
+                    {e.name} — {e.role}
+                  </option>
+                ))}
+              </select>
+              {errors.assignedEmployeeId && (
+                <p className="text-xs text-destructive">
+                  {errors.assignedEmployeeId.message}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <ModalFooter>
+            <ModalClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </ModalClose>
+            <Button type="submit">
+              {isEditing ? 'Save Changes' : 'Add Lead'}
+            </Button>
+          </ModalFooter>
+        </form>
+      </ModalContent>
+    </Modal>
+  );
+}
