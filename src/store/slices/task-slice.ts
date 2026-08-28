@@ -104,10 +104,14 @@ const taskSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(
-      'tasks/@@HYDRATE',
-      (_state, action) => (action as any).payload
-    );
+    builder.addCase('tasks/@@HYDRATE', (_state, action) => {
+      const persisted = (action as any).payload;
+      return {
+        ...initialState,
+        ...persisted,
+        ui: { ...initialState.ui, ...(persisted.ui ?? {}) },
+      };
+    });
   },
 });
 
