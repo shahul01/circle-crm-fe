@@ -7,7 +7,7 @@ import {
   TableRow,
   TableHead,
   TableCell,
-} from '@/lib/components';
+} from '@/components/ui';
 
 interface VirtualizedTableProps<T> {
   data: T[];

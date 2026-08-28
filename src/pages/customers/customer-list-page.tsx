@@ -42,7 +42,7 @@ import {
   SelectTrigger,
   SelectContent,
   SelectItem,
-} from '@/lib/components';
+} from '@/components/ui';
 import {
   Plus,
   Download,

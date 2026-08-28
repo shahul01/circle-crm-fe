@@ -14,7 +14,7 @@ import {
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { selectUser, logout } from '@/store/slices/auth-slice';
 import { selectTheme, toggleTheme } from '@/store/slices/ui-slice';
-import { Button, ConfirmDialog } from '@/lib/components';
+import { Button, ConfirmDialog } from '@/components/ui';
 import { cn } from '@/lib/utils';
 
 const NAV_ITEMS = [

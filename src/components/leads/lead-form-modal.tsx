@@ -27,7 +27,7 @@ import {
   SelectContent,
   SelectItem,
   Spinner,
-} from '@/lib/components';
+} from '@/components/ui';
 
 interface LeadFormModalProps {
   open: boolean;

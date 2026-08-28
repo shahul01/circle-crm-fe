@@ -20,7 +20,7 @@ import { addManyTasks, selectTotalTasks } from '@/store/slices/task-slice';
 import { addNotification } from '@/store/slices/notification-slice';
 import { getSeedState } from '@/services/seed';
 import { loginSchema, type LoginForm } from '@/schemas/auth';
-import { Button, Input, Label, ConfirmDialog } from '@/lib/components';
+import { Button, Input, Label, ConfirmDialog } from '@/components/ui';
 
 function LoginPage() {
   const dispatch = useAppDispatch();

@@ -18,7 +18,7 @@ import {
   CardTitle,
   CardContent,
   Badge,
-} from '@/lib/components';
+} from '@/components/ui';
 import {
   Users,
   Target,
