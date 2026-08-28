@@ -4,16 +4,27 @@ let prevCustomerIds: string[] = [];
 let prevLeadIds: string[] = [];
 let prevTaskIds: string[] = [];
 
-function trackCreates(
+interface CreatedDiff {
+  addedIds: string[];
+  nextIds: string[];
+}
+
+function diffCreated(prevIds: string[], currentIds: string[]): CreatedDiff {
+  const nextIds = [...currentIds];
+  return {
+    addedIds: nextIds.filter((id) => !prevIds.includes(id)),
+    nextIds,
+  };
+}
+
+function dispatchCreated(
   dispatch: (action: any) => any,
-  prevIds: string[],
-  currentIds: string[],
+  addedIds: string[],
   entities: Record<string, any>,
   entityType: 'customer' | 'lead' | 'task',
   nameField: string
-): string[] {
-  const added = currentIds.filter((id) => !prevIds.includes(id));
-  for (const id of added) {
+) {
+  for (const id of addedIds) {
     const entity = entities[id];
     if (entity) {
       dispatch(
@@ -26,7 +37,6 @@ function trackCreates(
       );
     }
   }
-  return [...currentIds];
 }
 
 export function setupActivityTracking(api: {
@@ -42,39 +52,36 @@ export function setupActivityTracking(api: {
   api.subscribe(() => {
     const state = api.getState();
 
-    if (
-      JSON.stringify(state.customers?.ids) !== JSON.stringify(prevCustomerIds)
-    ) {
-      prevCustomerIds = trackCreates(
-        api.dispatch,
-        prevCustomerIds,
-        state.customers.ids,
-        state.customers.entities,
-        'customer',
-        'name'
-      );
-    }
+    const customers = diffCreated(prevCustomerIds, state.customers?.ids ?? []);
+    const leads = diffCreated(prevLeadIds, state.leads?.ids ?? []);
+    const tasks = diffCreated(prevTaskIds, state.tasks?.ids ?? []);
 
-    if (JSON.stringify(state.leads?.ids) !== JSON.stringify(prevLeadIds)) {
-      prevLeadIds = trackCreates(
-        api.dispatch,
-        prevLeadIds,
-        state.leads.ids,
-        state.leads.entities,
-        'lead',
-        'name'
-      );
-    }
+    // Update tracked ids before dispatching so the logActivity actions
+    // re-entering this listener are no-ops instead of an infinite loop.
+    prevCustomerIds = customers.nextIds;
+    prevLeadIds = leads.nextIds;
+    prevTaskIds = tasks.nextIds;
 
-    if (JSON.stringify(state.tasks?.ids) !== JSON.stringify(prevTaskIds)) {
-      prevTaskIds = trackCreates(
-        api.dispatch,
-        prevTaskIds,
-        state.tasks.ids,
-        state.tasks.entities,
-        'task',
-        'title'
-      );
-    }
+    dispatchCreated(
+      api.dispatch,
+      customers.addedIds,
+      state.customers?.entities ?? {},
+      'customer',
+      'name'
+    );
+    dispatchCreated(
+      api.dispatch,
+      leads.addedIds,
+      state.leads?.entities ?? {},
+      'lead',
+      'name'
+    );
+    dispatchCreated(
+      api.dispatch,
+      tasks.addedIds,
+      state.tasks?.entities ?? {},
+      'task',
+      'title'
+    );
   });
 }
