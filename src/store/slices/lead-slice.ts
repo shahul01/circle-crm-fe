@@ -18,7 +18,7 @@ interface LeadUI {
   selectedIds: string[];
 }
 
-interface LeadState {
+export interface LeadState {
   entities: Record<string, Lead>;
   ids: string[];
   ui: LeadUI;
