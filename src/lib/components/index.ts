@@ -46,3 +46,4 @@ export {
 } from './avatar';
 export { EmptyState } from './empty-state';
 export { SearchInput } from './search-input';
+export { VirtualizedTable } from './virtualized-table';
