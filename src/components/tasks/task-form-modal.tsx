@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { taskSchema, type TaskForm } from '@/schemas/task';
 import { EMPLOYEES } from '@/services/employees';
@@ -19,6 +19,11 @@ import {
   Button,
   Input,
   Label,
+  Select,
+  SelectValue,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
 } from '@/lib/components';
 
 interface TaskFormModalProps {
@@ -38,6 +43,7 @@ export function TaskFormModal({
 
   const {
     register,
+    control,
     handleSubmit,
     reset,
     formState: { errors },
@@ -149,27 +155,41 @@ export function TaskFormModal({
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="priority">Priority</Label>
-              <select
-                id="priority"
-                className="flex h-9 w-full rounded-lg border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                {...register('priority')}
-              >
-                <option value="Low">Low</option>
-                <option value="Medium">Medium</option>
-                <option value="High">High</option>
-              </select>
+              <Controller
+                name="priority"
+                control={control}
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger id="priority" className="w-full">
+                      <SelectValue placeholder="Priority" />
+                    </SelectTrigger>
+                    <SelectContent align="start">
+                      <SelectItem value="Low">Low</SelectItem>
+                      <SelectItem value="Medium">Medium</SelectItem>
+                      <SelectItem value="High">High</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
-              <select
-                id="status"
-                className="flex h-9 w-full rounded-lg border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                {...register('status')}
-              >
-                <option value="Todo">Todo</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Completed">Completed</option>
-              </select>
+              <Controller
+                name="status"
+                control={control}
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger id="status" className="w-full">
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent align="start">
+                      <SelectItem value="Todo">Todo</SelectItem>
+                      <SelectItem value="In Progress">In Progress</SelectItem>
+                      <SelectItem value="Completed">Completed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="dueDate">Due Date</Label>
@@ -187,18 +207,24 @@ export function TaskFormModal({
             </div>
             <div className="space-y-2">
               <Label htmlFor="assignedEmployeeId">Assign To</Label>
-              <select
-                id="assignedEmployeeId"
-                className="flex h-9 w-full rounded-lg border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                {...register('assignedEmployeeId')}
-              >
-                <option value="">Select employee</option>
-                {EMPLOYEES.map((e) => (
-                  <option key={e.id} value={e.id}>
-                    {e.name}
-                  </option>
-                ))}
-              </select>
+              <Controller
+                name="assignedEmployeeId"
+                control={control}
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger id="assignedEmployeeId" className="w-full">
+                      <SelectValue placeholder="Select employee" />
+                    </SelectTrigger>
+                    <SelectContent align="start">
+                      {EMPLOYEES.map((e) => (
+                        <SelectItem key={e.id} value={e.id}>
+                          {e.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
               {errors.assignedEmployeeId && (
                 <p className="text-xs text-destructive">
                   {errors.assignedEmployeeId.message}
@@ -209,18 +235,28 @@ export function TaskFormModal({
               <Label htmlFor="relatedCustomerId">
                 Related Customer (optional)
               </Label>
-              <select
-                id="relatedCustomerId"
-                className="flex h-9 w-full rounded-lg border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                {...register('relatedCustomerId')}
-              >
-                <option value="">None</option>
-                {customers.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
+              <Controller
+                name="relatedCustomerId"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    value={field.value || 'none'}
+                    onValueChange={(v) => field.onChange(v === 'none' ? '' : v)}
+                  >
+                    <SelectTrigger id="relatedCustomerId" className="w-full">
+                      <SelectValue placeholder="None" />
+                    </SelectTrigger>
+                    <SelectContent align="start">
+                      <SelectItem value="none">None</SelectItem>
+                      {customers.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>
+                          {c.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </div>
           </div>
 

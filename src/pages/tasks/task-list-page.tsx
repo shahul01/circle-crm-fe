@@ -36,6 +36,11 @@ import {
   SearchInput,
   ConfirmDialog,
   EmptyState,
+  Select,
+  SelectValue,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
 } from '@/lib/components';
 import {
   Plus,
@@ -164,34 +169,38 @@ function TaskListPage({ onToggleView }: { onToggleView: () => void }) {
               placeholder="Search tasks..."
               className="sm:w-72"
             />
-            <select
+            <Select
               value={statusFilter}
-              onChange={(e) =>
-                dispatch(
-                  setTaskStatusFilter(e.target.value as TaskStatus | 'All')
-                )
+              onValueChange={(v) =>
+                dispatch(setTaskStatusFilter(v as TaskStatus | 'All'))
               }
-              className="flex h-9 rounded-lg border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             >
-              <option value="All">All Statuses</option>
-              <option value="Todo">Todo</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Completed">Completed</option>
-            </select>
-            <select
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="All Statuses" />
+              </SelectTrigger>
+              <SelectContent align="end">
+                <SelectItem value="All">All Statuses</SelectItem>
+                <SelectItem value="Todo">Todo</SelectItem>
+                <SelectItem value="In Progress">In Progress</SelectItem>
+                <SelectItem value="Completed">Completed</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select
               value={priorityFilter}
-              onChange={(e) =>
-                dispatch(
-                  setTaskPriorityFilter(e.target.value as TaskPriority | 'All')
-                )
+              onValueChange={(v) =>
+                dispatch(setTaskPriorityFilter(v as TaskPriority | 'All'))
               }
-              className="flex h-9 rounded-lg border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             >
-              <option value="All">All Priorities</option>
-              <option value="High">High</option>
-              <option value="Medium">Medium</option>
-              <option value="Low">Low</option>
-            </select>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="All Priorities" />
+              </SelectTrigger>
+              <SelectContent align="end">
+                <SelectItem value="All">All Priorities</SelectItem>
+                <SelectItem value="High">High</SelectItem>
+                <SelectItem value="Medium">Medium</SelectItem>
+                <SelectItem value="Low">Low</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>

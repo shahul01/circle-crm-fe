@@ -45,5 +45,13 @@ export {
   DropdownMenuPortal,
 } from './avatar';
 export { EmptyState } from './empty-state';
+export {
+  Select,
+  SelectValue,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectGroup,
+} from './select';
 export { SearchInput } from './search-input';
 export { VirtualizedTable } from './virtualized-table';

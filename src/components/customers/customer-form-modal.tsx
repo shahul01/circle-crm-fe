@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { customerSchema, type CustomerForm } from '@/schemas/customer';
 import { EMPLOYEES } from '@/services/employees';
@@ -18,6 +18,11 @@ import {
   Button,
   Input,
   Label,
+  Select,
+  SelectValue,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
 } from '@/lib/components';
 
 interface CustomerFormModalProps {
@@ -36,6 +41,7 @@ export function CustomerFormModal({
 
   const {
     register,
+    control,
     handleSubmit,
     reset,
     formState: { errors },
@@ -184,29 +190,42 @@ export function CustomerFormModal({
             </div>
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
-              <select
-                id="status"
-                className="flex h-9 w-full rounded-lg border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                {...register('status')}
-              >
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-              </select>
+              <Controller
+                name="status"
+                control={control}
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger id="status" className="w-full">
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent align="start">
+                      <SelectItem value="Active">Active</SelectItem>
+                      <SelectItem value="Inactive">Inactive</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </div>
             <div className="space-y-2 sm:col-span-2">
               <Label htmlFor="assignedEmployeeId">Assigned Employee</Label>
-              <select
-                id="assignedEmployeeId"
-                className="flex h-9 w-full rounded-lg border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                {...register('assignedEmployeeId')}
-              >
-                <option value="">Select employee</option>
-                {EMPLOYEES.map((e) => (
-                  <option key={e.id} value={e.id}>
-                    {e.name} — {e.role}
-                  </option>
-                ))}
-              </select>
+              <Controller
+                name="assignedEmployeeId"
+                control={control}
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger id="assignedEmployeeId" className="w-full">
+                      <SelectValue placeholder="Select employee" />
+                    </SelectTrigger>
+                    <SelectContent align="start">
+                      {EMPLOYEES.map((e) => (
+                        <SelectItem key={e.id} value={e.id}>
+                          {e.name} — {e.role}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
               {errors.assignedEmployeeId && (
                 <p className="text-xs text-destructive">
                   {errors.assignedEmployeeId.message}

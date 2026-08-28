@@ -9,6 +9,7 @@
   10% violet accent for highlights/focus, plus semantic status colors.
 */
 :root {
+  color-scheme: light;
   --background: hsl(210 40% 98%);
   --foreground: hsl(222 47% 11%);
 
@@ -44,6 +45,7 @@
 }
 
 .dark {
+  color-scheme: dark;
   --background: hsl(222 47% 8%);
   --foreground: hsl(210 40% 96%);
 
