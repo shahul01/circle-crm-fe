@@ -14,6 +14,9 @@ interface TaskUI {
     'title' | 'status' | 'priority' | 'dueDate' | 'createdAt'
   >;
   sortDir: 'asc' | 'desc';
+  page: number;
+  perPage: number;
+  selectedIds: string[];
 }
 
 interface TaskState {
@@ -35,6 +38,9 @@ const initialState: TaskState = {
     priorityFilter: 'All',
     sortField: 'createdAt',
     sortDir: 'desc',
+    page: 1,
+    perPage: 10,
+    selectedIds: [],
   },
 };
 
@@ -58,12 +64,15 @@ const taskSlice = createSlice({
     },
     setTaskSearch(state, action: PayloadAction<string>) {
       state.ui.search = action.payload;
+      state.ui.page = 1;
     },
     setTaskStatusFilter(state, action: PayloadAction<TaskStatus | 'All'>) {
       state.ui.statusFilter = action.payload;
+      state.ui.page = 1;
     },
     setTaskPriorityFilter(state, action: PayloadAction<TaskPriority | 'All'>) {
       state.ui.priorityFilter = action.payload;
+      state.ui.page = 1;
     },
     setTaskSort(
       state,
@@ -71,6 +80,27 @@ const taskSlice = createSlice({
     ) {
       state.ui.sortField = action.payload.field;
       state.ui.sortDir = action.payload.dir;
+    },
+    setTaskPage(state, action: PayloadAction<number>) {
+      state.ui.page = action.payload;
+    },
+    toggleTaskSelection(state, action: PayloadAction<string>) {
+      const idx = state.ui.selectedIds.indexOf(action.payload);
+      if (idx === -1) {
+        state.ui.selectedIds.push(action.payload);
+      } else {
+        state.ui.selectedIds.splice(idx, 1);
+      }
+    },
+    toggleSelectAllTasks(state) {
+      if (state.ui.selectedIds.length === state.ids.length) {
+        state.ui.selectedIds = [];
+      } else {
+        state.ui.selectedIds = [...state.ids];
+      }
+    },
+    clearTaskSelection(state) {
+      state.ui.selectedIds = [];
     },
   },
   extraReducers: (builder) => {
@@ -92,6 +122,10 @@ export const {
   setTaskStatusFilter,
   setTaskPriorityFilter,
   setTaskSort,
+  setTaskPage,
+  toggleTaskSelection,
+  toggleSelectAllTasks,
+  clearTaskSelection,
 } = taskSlice.actions;
 
 export default taskSlice.reducer;
@@ -130,6 +164,30 @@ export const selectFilteredTasks = (state: { tasks: TaskState }) => {
     return ui.sortDir === 'asc' ? cmp : -cmp;
   });
 };
+
+export const selectPaginatedTasks = (state: { tasks: TaskState }) => {
+  const filtered = selectFilteredTasks(state);
+  const { page, perPage } = state.tasks.ui;
+  const start = (page - 1) * perPage;
+  return {
+    items: filtered.slice(start, start + perPage),
+    total: filtered.length,
+    totalPages: Math.ceil(filtered.length / perPage) || 1,
+  };
+};
+
+export const selectTaskPage = (state: { tasks: TaskState }) =>
+  state.tasks.ui.page;
+export const selectSelectedTaskIds = (state: { tasks: TaskState }) =>
+  state.tasks.ui.selectedIds;
+export const selectTaskStatusFilter = (state: { tasks: TaskState }) =>
+  state.tasks.ui.statusFilter;
+export const selectTaskPriorityFilter = (state: { tasks: TaskState }) =>
+  state.tasks.ui.priorityFilter;
+export const selectTaskSort = (state: { tasks: TaskState }) => ({
+  field: state.tasks.ui.sortField,
+  dir: state.tasks.ui.sortDir,
+});
 
 export const selectTotalTasks = (state: { tasks: TaskState }) =>
   state.tasks.ids.length;
