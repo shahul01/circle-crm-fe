@@ -4,13 +4,14 @@ import {
   type PayloadAction,
 } from '@reduxjs/toolkit';
 import type { Customer, CustomerStatus } from '@/types';
+import { employeeDisplayName } from '@/services/employees';
 
 interface CustomerUI {
   search: string;
   statusFilter: CustomerStatus | 'All';
   sortField: keyof Pick<
     Customer,
-    'name' | 'email' | 'company' | 'status' | 'createdAt'
+    'name' | 'email' | 'company' | 'status' | 'createdAt' | 'assignedEmployeeId'
   >;
   sortDir: 'asc' | 'desc';
   page: number;
@@ -188,8 +189,14 @@ export const selectFilteredCustomers = (state: {
   }
 
   const sorted = [...filtered].sort((a, b) => {
-    const aVal = a[ui.sortField] as string;
-    const bVal = b[ui.sortField] as string;
+    const aVal =
+      ui.sortField === 'assignedEmployeeId'
+        ? employeeDisplayName(a.assignedEmployeeId)
+        : (a[ui.sortField] as string);
+    const bVal =
+      ui.sortField === 'assignedEmployeeId'
+        ? employeeDisplayName(b.assignedEmployeeId)
+        : (b[ui.sortField] as string);
     const cmp = aVal.localeCompare(bVal);
     return ui.sortDir === 'asc' ? cmp : -cmp;
   });

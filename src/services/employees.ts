@@ -1,5 +1,8 @@
 import type { Employee } from '@/types';
 
+export const employeeDisplayName = (id?: string) =>
+  id ? (EMPLOYEE_NAMES.get(id) ?? 'Unassigned') : 'Unassigned';
+
 export const EMPLOYEES: Employee[] = [
   {
     id: 'emp-1',
@@ -32,3 +35,5 @@ export const EMPLOYEES: Employee[] = [
     email: 'lisa@circlecrm.com',
   },
 ];
+
+export const EMPLOYEE_NAMES = new Map(EMPLOYEES.map((e) => [e.id, e.name]));

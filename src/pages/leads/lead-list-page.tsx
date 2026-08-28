@@ -59,7 +59,8 @@ import type { Lead, LeadStatus } from '@/types';
 
 const employeeMap = new Map(EMPLOYEES.map((e) => [e.id, e.name]));
 
-type SortField = 'name' | 'email' | 'company' | 'status' | 'createdAt';
+type SortField =
+  'name' | 'email' | 'company' | 'status' | 'createdAt' | 'assignedEmployeeId';
 
 function SortIcon({
   field,
@@ -296,7 +297,13 @@ function LeadListPage() {
                       </button>
                     </TableHead>
                     <TableHead className="hidden xl:table-cell">
-                      Employee
+                      <button
+                        onClick={() => handleSort('assignedEmployeeId')}
+                        className="hover:text-foreground"
+                      >
+                        Employee
+                        <SortIcon field="assignedEmployeeId" sort={sort} />
+                      </button>
                     </TableHead>
                     <TableHead className="hidden lg:table-cell">
                       <button

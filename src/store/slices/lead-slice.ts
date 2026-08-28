@@ -4,13 +4,14 @@ import {
   type PayloadAction,
 } from '@reduxjs/toolkit';
 import type { Lead, LeadStatus } from '@/types';
+import { employeeDisplayName } from '@/services/employees';
 
 interface LeadUI {
   search: string;
   statusFilter: LeadStatus | 'All';
   sortField: keyof Pick<
     Lead,
-    'name' | 'email' | 'company' | 'status' | 'createdAt'
+    'name' | 'email' | 'company' | 'status' | 'createdAt' | 'assignedEmployeeId'
   >;
   sortDir: 'asc' | 'desc';
   page: number;
@@ -161,8 +162,14 @@ export const selectFilteredLeads = (state: { leads: LeadState }) => {
   }
 
   return [...filtered].sort((a, b) => {
-    const aVal = a[ui.sortField] as string;
-    const bVal = b[ui.sortField] as string;
+    const aVal =
+      ui.sortField === 'assignedEmployeeId'
+        ? employeeDisplayName(a.assignedEmployeeId)
+        : (a[ui.sortField] as string);
+    const bVal =
+      ui.sortField === 'assignedEmployeeId'
+        ? employeeDisplayName(b.assignedEmployeeId)
+        : (b[ui.sortField] as string);
     const cmp = aVal.localeCompare(bVal);
     return ui.sortDir === 'asc' ? cmp : -cmp;
   });
