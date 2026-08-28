@@ -274,6 +274,15 @@ function TaskListPage({ onToggleView }: { onToggleView: () => void }) {
                     <TableHead className="hidden lg:table-cell">
                       Assignee
                     </TableHead>
+                    <TableHead className="hidden xl:table-cell">
+                      <button
+                        onClick={() => handleSort('createdAt')}
+                        className="hover:text-foreground"
+                      >
+                        Created At
+                        <SortIcon field="createdAt" sort={sort} />
+                      </button>
+                    </TableHead>
                     <TableHead className="w-24">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -310,6 +319,9 @@ function TaskListPage({ onToggleView }: { onToggleView: () => void }) {
                       </TableCell>
                       <TableCell className="hidden lg:table-cell text-muted-foreground">
                         {employeeMap.get(t.assignedEmployeeId) ?? 'Unassigned'}
+                      </TableCell>
+                      <TableCell className="hidden xl:table-cell text-muted-foreground">
+                        {new Date(t.createdAt).toLocaleDateString()}
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-1">

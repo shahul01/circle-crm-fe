@@ -251,6 +251,15 @@ function CustomerListPage() {
                     <TableHead className="hidden xl:table-cell">
                       Employee
                     </TableHead>
+                    <TableHead className="hidden lg:table-cell">
+                      <button
+                        onClick={() => handleSort('createdAt')}
+                        className="hover:text-foreground"
+                      >
+                        Created At
+                        <SortIcon field="createdAt" sort={sort} />
+                      </button>
+                    </TableHead>
                     <TableHead className="w-24">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -294,6 +303,9 @@ function CustomerListPage() {
                       </TableCell>
                       <TableCell className="hidden xl:table-cell text-muted-foreground">
                         {employeeMap.get(c.assignedEmployeeId) ?? 'Unassigned'}
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell text-muted-foreground">
+                        {new Date(c.createdAt).toLocaleDateString()}
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-1">
