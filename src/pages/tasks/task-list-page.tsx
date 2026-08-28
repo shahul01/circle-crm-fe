@@ -54,7 +54,13 @@ import type { Task, TaskStatus, TaskPriority } from '@/types';
 
 const employeeMap = new Map(EMPLOYEES.map((e) => [e.id, e.name]));
 
-type SortField = 'title' | 'status' | 'priority' | 'dueDate' | 'createdAt';
+type SortField =
+  | 'title'
+  | 'status'
+  | 'priority'
+  | 'dueDate'
+  | 'createdAt'
+  | 'assignedEmployeeId';
 
 function SortIcon({
   field,
@@ -272,7 +278,13 @@ function TaskListPage({ onToggleView }: { onToggleView: () => void }) {
                       </button>
                     </TableHead>
                     <TableHead className="hidden lg:table-cell">
-                      Assignee
+                      <button
+                        onClick={() => handleSort('assignedEmployeeId')}
+                        className="hover:text-foreground"
+                      >
+                        Assignee
+                        <SortIcon field="assignedEmployeeId" sort={sort} />
+                      </button>
                     </TableHead>
                     <TableHead className="hidden xl:table-cell">
                       <button
