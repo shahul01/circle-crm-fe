@@ -6,6 +6,7 @@ import { EMPLOYEES } from '@/services/employees';
 import { useAppDispatch } from '@/store/hooks';
 import { addCustomer, updateCustomer } from '@/store/slices/customer-slice';
 import { addNotification } from '@/store/slices/notification-slice';
+import { usePersistSubmit } from '@/hooks/use-persist-submit';
 import type { Customer } from '@/types';
 import {
   Modal,
@@ -23,6 +24,7 @@ import {
   SelectTrigger,
   SelectContent,
   SelectItem,
+  Spinner,
 } from '@/lib/components';
 
 interface CustomerFormModalProps {
@@ -38,6 +40,7 @@ export function CustomerFormModal({
 }: CustomerFormModalProps) {
   const dispatch = useAppDispatch();
   const isEditing = !!customer;
+  const { saving, run } = usePersistSubmit();
 
   const {
     register,
@@ -85,37 +88,44 @@ export function CustomerFormModal({
   }, [open, customer, reset]);
 
   const onSubmit = (data: CustomerForm) => {
-    if (isEditing && customer) {
-      dispatch(updateCustomer({ id: customer.id, changes: data }));
-      dispatch(
-        addNotification(
-          'Customer updated',
-          `${data.name} has been updated.`,
-          'success'
-        )
-      );
-    } else {
-      dispatch(
-        addCustomer({
-          id: `cust-${Date.now()}`,
-          ...data,
-          createdAt: new Date().toISOString(),
-          notes: [],
-        })
-      );
-      dispatch(
-        addNotification(
-          'Customer added',
-          `${data.name} has been created.`,
-          'success'
-        )
-      );
-    }
-    onOpenChange(false);
+    void run(() => {
+      if (isEditing && customer) {
+        dispatch(updateCustomer({ id: customer.id, changes: data }));
+        dispatch(
+          addNotification(
+            'Customer updated',
+            `${data.name} has been updated.`,
+            'success'
+          )
+        );
+      } else {
+        dispatch(
+          addCustomer({
+            id: `cust-${Date.now()}`,
+            ...data,
+            createdAt: new Date().toISOString(),
+            notes: [],
+          })
+        );
+        dispatch(
+          addNotification(
+            'Customer added',
+            `${data.name} has been created.`,
+            'success'
+          )
+        );
+      }
+    }).then(() => onOpenChange(false));
   };
 
   return (
-    <Modal open={open} onOpenChange={onOpenChange}>
+    <Modal
+      open={open}
+      onOpenChange={(o) => {
+        if (saving && !o) return;
+        onOpenChange(o);
+      }}
+    >
       <ModalContent className="sm:max-w-lg">
         <ModalHeader>
           <ModalTitle>
@@ -132,7 +142,12 @@ export function CustomerFormModal({
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="name">Name</Label>
-              <Input id="name" error={!!errors.name} {...register('name')} />
+              <Input
+                id="name"
+                disabled={saving}
+                error={!!errors.name}
+                {...register('name')}
+              />
               {errors.name && (
                 <p className="text-xs text-destructive">
                   {errors.name.message}
@@ -144,6 +159,7 @@ export function CustomerFormModal({
               <Input
                 id="email"
                 type="email"
+                disabled={saving}
                 error={!!errors.email}
                 {...register('email')}
               />
@@ -155,7 +171,12 @@ export function CustomerFormModal({
             </div>
             <div className="space-y-2">
               <Label htmlFor="phone">Phone</Label>
-              <Input id="phone" error={!!errors.phone} {...register('phone')} />
+              <Input
+                id="phone"
+                disabled={saving}
+                error={!!errors.phone}
+                {...register('phone')}
+              />
               {errors.phone && (
                 <p className="text-xs text-destructive">
                   {errors.phone.message}
@@ -166,6 +187,7 @@ export function CustomerFormModal({
               <Label htmlFor="company">Company</Label>
               <Input
                 id="company"
+                disabled={saving}
                 error={!!errors.company}
                 {...register('company')}
               />
@@ -179,6 +201,7 @@ export function CustomerFormModal({
               <Label htmlFor="location">Location</Label>
               <Input
                 id="location"
+                disabled={saving}
                 error={!!errors.location}
                 {...register('location')}
               />
@@ -195,7 +218,11 @@ export function CustomerFormModal({
                 control={control}
                 render={({ field }) => (
                   <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger id="status" className="w-full">
+                    <SelectTrigger
+                      id="status"
+                      disabled={saving}
+                      className="w-full"
+                    >
                       <SelectValue placeholder="Status" />
                     </SelectTrigger>
                     <SelectContent align="start">
@@ -213,7 +240,11 @@ export function CustomerFormModal({
                 control={control}
                 render={({ field }) => (
                   <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger id="assignedEmployeeId" className="w-full">
+                    <SelectTrigger
+                      id="assignedEmployeeId"
+                      disabled={saving}
+                      className="w-full"
+                    >
                       <SelectValue placeholder="Select employee" />
                     </SelectTrigger>
                     <SelectContent align="start">
@@ -236,9 +267,12 @@ export function CustomerFormModal({
 
           <ModalFooter>
             <ModalClose asChild>
-              <Button variant="outline">Cancel</Button>
+              <Button variant="outline" disabled={saving}>
+                Cancel
+              </Button>
             </ModalClose>
-            <Button type="submit">
+            <Button type="submit" disabled={saving}>
+              {saving && <Spinner size="sm" />}
               {isEditing ? 'Save Changes' : 'Add Customer'}
             </Button>
           </ModalFooter>

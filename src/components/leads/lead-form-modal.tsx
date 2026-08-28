@@ -8,6 +8,7 @@ import { useAppDispatch } from '@/store/hooks';
 import { addLead, updateLead } from '@/store/slices/lead-slice';
 import { addCustomer } from '@/store/slices/customer-slice';
 import { addNotification } from '@/store/slices/notification-slice';
+import { usePersistSubmit } from '@/hooks/use-persist-submit';
 import type { Lead } from '@/types';
 import {
   Modal,
@@ -25,6 +26,7 @@ import {
   SelectTrigger,
   SelectContent,
   SelectItem,
+  Spinner,
 } from '@/lib/components';
 
 interface LeadFormModalProps {
@@ -41,6 +43,7 @@ export function LeadFormModal({
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const isEditing = !!lead;
+  const { saving, run } = usePersistSubmit();
 
   const {
     register,
@@ -85,68 +88,76 @@ export function LeadFormModal({
   }, [open, lead, reset]);
 
   const onSubmit = (data: LeadForm) => {
-    if (isEditing && lead) {
-      dispatch(updateLead({ id: lead.id, changes: data }));
-      dispatch(
-        addNotification(
-          'Lead updated',
-          `${data.name} has been updated.`,
-          'success'
-        )
-      );
-    } else {
-      dispatch(
-        addLead({
-          id: `lead-${Date.now()}`,
-          ...data,
-          createdAt: new Date().toISOString(),
-        })
-      );
-      dispatch(
-        addNotification(
-          'Lead added',
-          `${data.name} has been created.`,
-          'success'
-        )
-      );
-    }
-
     const isNewConversion =
       data.status === 'Converted' &&
-      (!isEditing || lead.status !== 'Converted');
+      (!isEditing || lead?.status !== 'Converted');
 
-    if (isNewConversion) {
-      dispatch(
-        addCustomer({
-          id: `cust-${Date.now()}`,
-          name: data.name,
-          email: data.email,
-          phone: data.phone,
-          company: data.company,
-          location: '',
-          status: 'Active',
-          assignedEmployeeId: data.assignedEmployeeId,
-          createdAt: new Date().toISOString(),
-          notes: [],
-        })
-      );
-      dispatch(
-        addNotification(
-          'Lead converted',
-          `${data.name} has been added as a customer.`,
-          'success'
-        )
-      );
+    void run(() => {
+      if (isEditing && lead) {
+        dispatch(updateLead({ id: lead.id, changes: data }));
+        dispatch(
+          addNotification(
+            'Lead updated',
+            `${data.name} has been updated.`,
+            'success'
+          )
+        );
+      } else {
+        dispatch(
+          addLead({
+            id: `lead-${Date.now()}`,
+            ...data,
+            createdAt: new Date().toISOString(),
+          })
+        );
+        dispatch(
+          addNotification(
+            'Lead added',
+            `${data.name} has been created.`,
+            'success'
+          )
+        );
+      }
+
+      if (isNewConversion) {
+        dispatch(
+          addCustomer({
+            id: `cust-${Date.now()}`,
+            name: data.name,
+            email: data.email,
+            phone: data.phone,
+            company: data.company,
+            location: '',
+            status: 'Active',
+            assignedEmployeeId: data.assignedEmployeeId,
+            createdAt: new Date().toISOString(),
+            notes: [],
+          })
+        );
+        dispatch(
+          addNotification(
+            'Lead converted',
+            `${data.name} has been added as a customer.`,
+            'success'
+          )
+        );
+      }
+    }).then(() => {
+      if (isNewConversion) {
+        navigate('/customers');
+      }
       onOpenChange(false);
-      navigate('/customers');
-      return;
-    }
-
-    onOpenChange(false);
+    });
   };
 
   return (
-    <Modal open={open} onOpenChange={onOpenChange}>
+    <Modal
+      open={open}
+      onOpenChange={(o) => {
+        if (saving && !o) return;
+        onOpenChange(o);
+      }}
+    >
       <ModalContent className="sm:max-w-lg">
         <ModalHeader>
           <ModalTitle>{isEditing ? 'Edit Lead' : 'Add Lead'}</ModalTitle>
@@ -161,7 +172,12 @@ export function LeadFormModal({
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="name">Name</Label>
-              <Input id="name" error={!!errors.name} {...register('name')} />
+              <Input
+                id="name"
+                disabled={saving}
+                error={!!errors.name}
+                {...register('name')}
+              />
               {errors.name && (
                 <p className="text-xs text-destructive">
                   {errors.name.message}
@@ -173,6 +189,7 @@ export function LeadFormModal({
               <Input
                 id="email"
                 type="email"
+                disabled={saving}
                 error={!!errors.email}
                 {...register('email')}
               />
@@ -184,7 +201,12 @@ export function LeadFormModal({
             </div>
             <div className="space-y-2">
               <Label htmlFor="phone">Phone</Label>
-              <Input id="phone" error={!!errors.phone} {...register('phone')} />
+              <Input
+                id="phone"
+                disabled={saving}
+                error={!!errors.phone}
+                {...register('phone')}
+              />
               {errors.phone && (
                 <p className="text-xs text-destructive">
                   {errors.phone.message}
@@ -195,6 +217,7 @@ export function LeadFormModal({
               <Label htmlFor="company">Company</Label>
               <Input
                 id="company"
+                disabled={saving}
                 error={!!errors.company}
                 {...register('company')}
               />
@@ -211,7 +234,11 @@ export function LeadFormModal({
                 control={control}
                 render={({ field }) => (
                   <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger id="status" className="w-full">
+                    <SelectTrigger
+                      id="status"
+                      disabled={saving}
+                      className="w-full"
+                    >
                       <SelectValue placeholder="Status" />
                     </SelectTrigger>
                     <SelectContent align="start">
@@ -232,7 +259,11 @@ export function LeadFormModal({
                 control={control}
                 render={({ field }) => (
                   <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger id="assignedEmployeeId" className="w-full">
+                    <SelectTrigger
+                      id="assignedEmployeeId"
+                      disabled={saving}
+                      className="w-full"
+                    >
                       <SelectValue placeholder="Select employee" />
                     </SelectTrigger>
                     <SelectContent align="start">
@@ -255,9 +286,12 @@ export function LeadFormModal({
 
           <ModalFooter>
             <ModalClose asChild>
-              <Button variant="outline">Cancel</Button>
+              <Button variant="outline" disabled={saving}>
+                Cancel
+              </Button>
             </ModalClose>
-            <Button type="submit">
+            <Button type="submit" disabled={saving}>
+              {saving && <Spinner size="sm" />}
               {isEditing ? 'Save Changes' : 'Add Lead'}
             </Button>
           </ModalFooter>
