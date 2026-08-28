@@ -9,6 +9,7 @@ import CustomerDetailPage from '@/pages/customers/customer-detail-page';
 import LeadListPage from '@/pages/leads/lead-list-page';
 import TasksPage from '@/pages/tasks/tasks-page';
 import NotFoundPage from '@/pages/NotFoundPage';
+import { ErrorBoundary } from '@/components/error-boundary';
 import { ToastContainer } from '@/lib/components';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import {
@@ -22,27 +23,29 @@ function AppRoutes() {
 
   return (
     <BrowserRouter>
-      <Routes>
-        <Route element={<AuthLayout />}>
-          <Route path="/login" element={<LoginPage />} />
-        </Route>
+      <ErrorBoundary>
+        <Routes>
+          <Route element={<AuthLayout />}>
+            <Route path="/login" element={<LoginPage />} />
+          </Route>
 
-        <Route
-          element={
-            <ProtectedRoute>
-              <AppLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route path="/" element={<DashboardPage />} />
-          <Route path="/customers" element={<CustomerListPage />} />
-          <Route path="/customers/:id" element={<CustomerDetailPage />} />
-          <Route path="/leads" element={<LeadListPage />} />
-          <Route path="/tasks" element={<TasksPage />} />
-        </Route>
+          <Route
+            element={
+              <ProtectedRoute>
+                <AppLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="/" element={<DashboardPage />} />
+            <Route path="/customers" element={<CustomerListPage />} />
+            <Route path="/customers/:id" element={<CustomerDetailPage />} />
+            <Route path="/leads" element={<LeadListPage />} />
+            <Route path="/tasks" element={<TasksPage />} />
+          </Route>
 
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </ErrorBoundary>
 
       <ToastContainer
         toasts={notifications}
