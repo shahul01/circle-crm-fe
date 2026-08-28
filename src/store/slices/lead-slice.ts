@@ -95,10 +95,14 @@ const leadSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(
-      'leads/@@HYDRATE',
-      (_state, action) => (action as any).payload
-    );
+    builder.addCase('leads/@@HYDRATE', (_state, action) => {
+      const persisted = (action as any).payload;
+      return {
+        ...initialState,
+        ...persisted,
+        ui: { ...initialState.ui, ...(persisted.ui ?? {}) },
+      };
+    });
   },
 });
 
