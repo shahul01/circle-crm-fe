@@ -6,8 +6,9 @@ import taskReducer from './slices/task-slice';
 import notificationReducer from './slices/notification-slice';
 import uiReducer from './slices/ui-slice';
 import activityReducer from './slices/activity-slice';
-import { loadState, saveState, type PersistedState } from '@/services/storage';
+import { loadState } from '@/services/storage';
 import { setupActivityTracking } from './listener';
+import { setupPersistence } from './persistence';
 
 export const store = configureStore({
   reducer: {
@@ -41,26 +42,7 @@ if (persisted) {
     store.dispatch({ type: 'activity/@@HYDRATE', payload: persisted.activity });
 }
 
-// Debounced persistence
-let saveTimer: ReturnType<typeof setTimeout> | null = null;
-store.subscribe(() => {
-  if (saveTimer) clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => {
-    const s = store.getState();
-    const toSave: PersistedState = {
-      version: 1,
-      timestamp: Date.now(),
-      customers: s.customers,
-      leads: s.leads,
-      tasks: s.tasks,
-      auth: s.auth,
-      ui: s.ui,
-      activity: s.activity,
-    };
-    saveState(toSave);
-  }, 500);
-});
-
+setupPersistence(store);
 setupActivityTracking(store);
 
 export type RootState = ReturnType<typeof store.getState>;

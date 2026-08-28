@@ -7,6 +7,7 @@ import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { addTask, updateTask } from '@/store/slices/task-slice';
 import { addNotification } from '@/store/slices/notification-slice';
 import { selectAllCustomers } from '@/store/slices/customer-slice';
+import { usePersistSubmit } from '@/hooks/use-persist-submit';
 import type { Task } from '@/types';
 import {
   Modal,
@@ -24,6 +25,7 @@ import {
   SelectTrigger,
   SelectContent,
   SelectItem,
+  Spinner,
 } from '@/lib/components';
 
 interface TaskFormModalProps {
@@ -40,6 +42,7 @@ export function TaskFormModal({
   const dispatch = useAppDispatch();
   const customers = useAppSelector(selectAllCustomers);
   const isEditing = !!task;
+  const { saving, run } = usePersistSubmit();
 
   const {
     register,
@@ -93,36 +96,43 @@ export function TaskFormModal({
       relatedCustomerId: data.relatedCustomerId || undefined,
     };
 
-    if (isEditing && task) {
-      dispatch(updateTask({ id: task.id, changes: payload }));
-      dispatch(
-        addNotification(
-          'Task updated',
-          `${data.title} has been updated.`,
-          'success'
-        )
-      );
-    } else {
-      dispatch(
-        addTask({
-          id: `task-${Date.now()}`,
-          ...payload,
-          createdAt: new Date().toISOString(),
-        })
-      );
-      dispatch(
-        addNotification(
-          'Task created',
-          `${data.title} has been created.`,
-          'success'
-        )
-      );
-    }
-    onOpenChange(false);
+    void run(() => {
+      if (isEditing && task) {
+        dispatch(updateTask({ id: task.id, changes: payload }));
+        dispatch(
+          addNotification(
+            'Task updated',
+            `${data.title} has been updated.`,
+            'success'
+          )
+        );
+      } else {
+        dispatch(
+          addTask({
+            id: `task-${Date.now()}`,
+            ...payload,
+            createdAt: new Date().toISOString(),
+          })
+        );
+        dispatch(
+          addNotification(
+            'Task created',
+            `${data.title} has been created.`,
+            'success'
+          )
+        );
+      }
+    }).then(() => onOpenChange(false));
   };
 
   return (
-    <Modal open={open} onOpenChange={onOpenChange}>
+    <Modal
+      open={open}
+      onOpenChange={(o) => {
+        if (saving && !o) return;
+        onOpenChange(o);
+      }}
+    >
       <ModalContent className="sm:max-w-lg">
         <ModalHeader>
           <ModalTitle>{isEditing ? 'Edit Task' : 'Create Task'}</ModalTitle>
@@ -136,7 +146,12 @@ export function TaskFormModal({
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="title">Title</Label>
-            <Input id="title" error={!!errors.title} {...register('title')} />
+            <Input
+              id="title"
+              disabled={saving}
+              error={!!errors.title}
+              {...register('title')}
+            />
             {errors.title && (
               <p className="text-xs text-destructive">{errors.title.message}</p>
             )}
@@ -147,7 +162,8 @@ export function TaskFormModal({
             <textarea
               id="description"
               rows={3}
-              className="flex w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              disabled={saving}
+              className="flex w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
               {...register('description')}
             />
           </div>
@@ -160,7 +176,11 @@ export function TaskFormModal({
                 control={control}
                 render={({ field }) => (
                   <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger id="priority" className="w-full">
+                    <SelectTrigger
+                      id="priority"
+                      disabled={saving}
+                      className="w-full"
+                    >
                       <SelectValue placeholder="Priority" />
                     </SelectTrigger>
                     <SelectContent align="start">
@@ -179,7 +199,11 @@ export function TaskFormModal({
                 control={control}
                 render={({ field }) => (
                   <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger id="status" className="w-full">
+                    <SelectTrigger
+                      id="status"
+                      disabled={saving}
+                      className="w-full"
+                    >
                       <SelectValue placeholder="Status" />
                     </SelectTrigger>
                     <SelectContent align="start">
@@ -196,6 +220,7 @@ export function TaskFormModal({
               <Input
                 id="dueDate"
                 type="date"
+                disabled={saving}
                 error={!!errors.dueDate}
                 {...register('dueDate')}
               />
@@ -212,7 +237,11 @@ export function TaskFormModal({
                 control={control}
                 render={({ field }) => (
                   <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger id="assignedEmployeeId" className="w-full">
+                    <SelectTrigger
+                      id="assignedEmployeeId"
+                      disabled={saving}
+                      className="w-full"
+                    >
                       <SelectValue placeholder="Select employee" />
                     </SelectTrigger>
                     <SelectContent align="start">
@@ -243,7 +272,11 @@ export function TaskFormModal({
                     value={field.value || 'none'}
                     onValueChange={(v) => field.onChange(v === 'none' ? '' : v)}
                   >
-                    <SelectTrigger id="relatedCustomerId" className="w-full">
+                    <SelectTrigger
+                      id="relatedCustomerId"
+                      disabled={saving}
+                      className="w-full"
+                    >
                       <SelectValue placeholder="None" />
                     </SelectTrigger>
                     <SelectContent align="start">
@@ -262,9 +295,12 @@ export function TaskFormModal({
 
           <ModalFooter>
             <ModalClose asChild>
-              <Button variant="outline">Cancel</Button>
+              <Button variant="outline" disabled={saving}>
+                Cancel
+              </Button>
             </ModalClose>
-            <Button type="submit">
+            <Button type="submit" disabled={saving}>
+              {saving && <Spinner size="sm" />}
               {isEditing ? 'Save Changes' : 'Create Task'}
             </Button>
           </ModalFooter>
