@@ -1,8 +1,9 @@
 import { useState, useMemo } from 'react';
 import {
   DndContext,
-  closestCenter,
+  closestCorners,
   PointerSensor,
+  useDroppable,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -13,6 +14,7 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { cn } from '@/lib/utils';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { selectAllTasks, setTaskStatus } from '@/store/slices/task-slice';
 import { addNotification } from '@/store/slices/notification-slice';
@@ -94,6 +96,71 @@ function SortableTaskCard({ task }: { task: Task }) {
   );
 }
 
+interface ColumnProps {
+  col: (typeof COLUMNS)[number];
+  tasks: Task[];
+  isNotEmpty: boolean;
+  isDragging: boolean;
+}
+
+function Column({ col, tasks, isNotEmpty, isDragging }: ColumnProps) {
+  const { setNodeRef, isOver: isOverDroppable } = useDroppable({
+    id: col.status,
+    data: { status: col.status },
+  });
+
+  return (
+    <Card
+      className={cn(
+        col.bg,
+        isOverDroppable && 'ring-2 ring-primary/40 shadow-lg shadow-primary/10'
+      )}
+    >
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-sm">
+          <span className={`h-2.5 w-2.5 rounded-full ${col.color}`} />
+          {col.status}
+          <Badge variant="secondary" className="ml-auto text-xs">
+            {tasks.length}
+          </Badge>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="pt-0">
+        <SortableContext
+          items={tasks.map((t) => t.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          <div
+            ref={setNodeRef}
+            className={cn(
+              'min-h-[100px] space-y-2 rounded-lg transition-colors',
+              !isNotEmpty &&
+                (isDragging
+                  ? 'border-2 border-dashed border-primary/50'
+                  : 'border-2 border-dashed border-transparent')
+            )}
+          >
+            {isNotEmpty ? (
+              tasks.map((task) => (
+                <SortableTaskCard key={task.id} task={task} />
+              ))
+            ) : (
+              <p
+                className={cn(
+                  'py-8 text-center text-xs text-muted-foreground',
+                  isDragging && 'text-primary'
+                )}
+              >
+                {isDragging ? 'Drop here' : 'No tasks'}
+              </p>
+            )}
+          </div>
+        </SortableContext>
+      </CardContent>
+    </Card>
+  );
+}
+
 function TaskKanbanPage({ onToggleView }: { onToggleView: () => void }) {
   const dispatch = useAppDispatch();
   const tasks = useAppSelector(selectAllTasks);
@@ -102,6 +169,8 @@ function TaskKanbanPage({ onToggleView }: { onToggleView: () => void }) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
   );
+
+  const [activeId, setActiveId] = useState<string | null>(null);
 
   const tasksByStatus = useMemo(() => {
     const map: Record<TaskStatus, Task[]> = {
@@ -115,8 +184,13 @@ function TaskKanbanPage({ onToggleView }: { onToggleView: () => void }) {
     return map;
   }, [tasks]);
 
+  const handleDragStart = (event: { active: { id: string | number } }) => {
+    setActiveId(String(event.active.id));
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
+    setActiveId(null);
     if (!over) return;
 
     const taskId = active.id as string;
@@ -135,6 +209,10 @@ function TaskKanbanPage({ onToggleView }: { onToggleView: () => void }) {
         );
       }
     }
+  };
+
+  const handleDragCancel = () => {
+    setActiveId(null);
   };
 
   return (
@@ -160,40 +238,20 @@ function TaskKanbanPage({ onToggleView }: { onToggleView: () => void }) {
 
       <DndContext
         sensors={sensors}
-        collisionDetection={closestCenter}
+        collisionDetection={closestCorners}
+        onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
+        onDragCancel={handleDragCancel}
       >
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {COLUMNS.map((col) => (
-            <Card key={col.status} className={col.bg}>
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-sm">
-                  <span className={`h-2.5 w-2.5 rounded-full ${col.color}`} />
-                  {col.status}
-                  <Badge variant="secondary" className="ml-auto text-xs">
-                    {tasksByStatus[col.status].length}
-                  </Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <SortableContext
-                  items={tasksByStatus[col.status].map((t) => t.id)}
-                  strategy={verticalListSortingStrategy}
-                >
-                  <div className="min-h-[100px] space-y-2">
-                    {tasksByStatus[col.status].length === 0 ? (
-                      <p className="py-8 text-center text-xs text-muted-foreground">
-                        No tasks
-                      </p>
-                    ) : (
-                      tasksByStatus[col.status].map((task) => (
-                        <SortableTaskCard key={task.id} task={task} />
-                      ))
-                    )}
-                  </div>
-                </SortableContext>
-              </CardContent>
-            </Card>
+            <Column
+              key={col.status}
+              col={col}
+              tasks={tasksByStatus[col.status]}
+              isNotEmpty={tasksByStatus[col.status].length > 0}
+              isDragging={activeId !== null}
+            />
           ))}
         </div>
       </DndContext>

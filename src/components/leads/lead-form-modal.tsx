@@ -1,10 +1,12 @@
 import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { leadSchema, LEAD_STATUS_OPTIONS, type LeadForm } from '@/schemas/lead';
 import { EMPLOYEES } from '@/services/employees';
 import { useAppDispatch } from '@/store/hooks';
 import { addLead, updateLead } from '@/store/slices/lead-slice';
+import { addCustomer } from '@/store/slices/customer-slice';
 import { addNotification } from '@/store/slices/notification-slice';
 import type { Lead } from '@/types';
 import {
@@ -37,6 +39,7 @@ export function LeadFormModal({
   lead,
 }: LeadFormModalProps) {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const isEditing = !!lead;
 
   const {
@@ -107,6 +110,38 @@ export function LeadFormModal({
         )
       );
     }
+
+    const isNewConversion =
+      data.status === 'Converted' &&
+      (!isEditing || lead.status !== 'Converted');
+
+    if (isNewConversion) {
+      dispatch(
+        addCustomer({
+          id: `cust-${Date.now()}`,
+          name: data.name,
+          email: data.email,
+          phone: data.phone,
+          company: data.company,
+          location: '',
+          status: 'Active',
+          assignedEmployeeId: data.assignedEmployeeId,
+          createdAt: new Date().toISOString(),
+          notes: [],
+        })
+      );
+      dispatch(
+        addNotification(
+          'Lead converted',
+          `${data.name} has been added as a customer.`,
+          'success'
+        )
+      );
+      onOpenChange(false);
+      navigate('/customers');
+      return;
+    }
+
     onOpenChange(false);
   };
 
