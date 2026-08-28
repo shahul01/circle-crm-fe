@@ -19,7 +19,7 @@ interface TaskUI {
   selectedIds: string[];
 }
 
-interface TaskState {
+export interface TaskState {
   entities: Record<string, Task>;
   ids: string[];
   ui: TaskUI;

@@ -18,7 +18,7 @@ interface CustomerUI {
   selectedIds: string[];
 }
 
-interface CustomerState {
+export interface CustomerState {
   entities: Record<string, Customer>;
   ids: string[];
   ui: CustomerUI;
