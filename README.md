@@ -19,6 +19,7 @@ A Customer Relationship Management (CRM) web application built with **React.js +
 ## Getting Started
 
 Requires Node.js 20+ and npm.
+
 I have used pnpm but one can use npm too
 
 ```bash
@@ -35,8 +36,8 @@ npm run build
 npm run preview
 
 # 5. Run tests
-npm run test          # one-shot
-npm run test:watch    # watch mode
+npm run test                    # unit test
+npm run test:e2e:ui          # e2e test
 
 # 6. Lint
 npm run lint
@@ -129,6 +130,7 @@ src/
 │   └── slices/           # 7 slices + colocated tests
 ├── schemas/              # zod schemas (+ validation tests)
 ├── services/             # storage, employees, seed, csv-export
+├── hooks/               # React hooks
 ├── routes/               # AppRoutes, ProtectedRoute
 ├── test/                 # vitest setup
 └── types/                # shared types
@@ -136,7 +138,7 @@ src/
 
 ## Tests
 
-Vitest + React Testing Library cover the assessment's minimum required cases:
+Vitest, React Testing Library and Playwright cover the assessment's minimum required cases:
 
 - Login (thunk + component validation + success redirect)
 - Add / Edit / Delete / Search / Filter customer
@@ -146,7 +148,10 @@ Vitest + React Testing Library cover the assessment's minimum required cases:
 - Form validation (zod)
 
 ```bash
-pnpm test
+# unit testing
+npm run test
+# e2e testing
+npm run test:e2e:ui
 ```
 
 ## Bonus Implemented

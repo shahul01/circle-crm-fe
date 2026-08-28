@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
+import { usePersistSubmit } from '@/hooks/use-persist-submit';
 import {
   selectCustomerById,
   addNoteToCustomer,
@@ -20,6 +21,7 @@ import {
   TabsTrigger,
   TabsContent,
   EmptyState,
+  Spinner,
 } from '@/lib/components';
 import {
   ArrowLeft,
@@ -41,6 +43,7 @@ function CustomerDetailPage() {
   );
 
   const [noteText, setNoteText] = useState('');
+  const { saving, run } = usePersistSubmit();
 
   if (!customer) {
     return (
@@ -64,7 +67,11 @@ function CustomerDetailPage() {
   const handleAddNote = () => {
     const trimmed = noteText.trim();
     if (!trimmed) return;
-    dispatch(addNoteToCustomer({ customerId: customer.id, content: trimmed }));
+    run(() => {
+      dispatch(
+        addNoteToCustomer({ customerId: customer.id, content: trimmed })
+      );
+    });
     setNoteText('');
   };
 
@@ -186,9 +193,14 @@ function CustomerDetailPage() {
                 <Button
                   size="sm"
                   onClick={handleAddNote}
-                  disabled={!noteText.trim()}
+                  disabled={!noteText.trim() || saving}
                 >
-                  <Plus className="mr-1 h-3.5 w-3.5" /> Add
+                  {saving ? (
+                    <Spinner size="sm" className="mr-1 h-3.5 w-3.5" />
+                  ) : (
+                    <Plus className="mr-1 h-3.5 w-3.5" />
+                  )}
+                  {saving ? 'Saving' : 'Add'}
                 </Button>
               </div>
 

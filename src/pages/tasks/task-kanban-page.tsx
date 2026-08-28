@@ -16,6 +16,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { cn } from '@/lib/utils';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
+import { usePersistSubmit } from '@/hooks/use-persist-submit';
 import { selectAllTasks, setTaskStatus } from '@/store/slices/task-slice';
 import { addNotification } from '@/store/slices/notification-slice';
 import { EMPLOYEES } from '@/services/employees';
@@ -27,6 +28,7 @@ import {
   CardHeader,
   CardTitle,
   CardContent,
+  Spinner,
 } from '@/lib/components';
 import { Plus, List } from 'lucide-react';
 import type { Task, TaskStatus, TaskPriority } from '@/types';
@@ -48,7 +50,13 @@ const PRIORITY_BADGE: Record<
   Low: 'secondary',
 };
 
-function SortableTaskCard({ task }: { task: Task }) {
+function SortableTaskCard({
+  task,
+  disabled,
+}: {
+  task: Task;
+  disabled?: boolean;
+}) {
   const {
     attributes,
     listeners,
@@ -70,7 +78,10 @@ function SortableTaskCard({ task }: { task: Task }) {
       style={style}
       {...attributes}
       {...listeners}
-      className="cursor-grab rounded-lg border border-border bg-card p-3 shadow-sm transition-shadow hover:shadow-md active:cursor-grabbing"
+      className={cn(
+        'cursor-grab rounded-lg border border-border bg-card p-3 shadow-sm transition-shadow hover:shadow-md active:cursor-grabbing',
+        disabled && 'pointer-events-none cursor-wait opacity-70'
+      )}
     >
       <div className="flex items-start justify-between gap-2">
         <p className="text-sm font-medium text-foreground">{task.title}</p>
@@ -101,9 +112,10 @@ interface ColumnProps {
   tasks: Task[];
   isNotEmpty: boolean;
   isDragging: boolean;
+  disabled?: boolean;
 }
 
-function Column({ col, tasks, isNotEmpty, isDragging }: ColumnProps) {
+function Column({ col, tasks, isNotEmpty, isDragging, disabled }: ColumnProps) {
   const { setNodeRef, isOver: isOverDroppable } = useDroppable({
     id: col.status,
     data: { status: col.status },
@@ -142,7 +154,11 @@ function Column({ col, tasks, isNotEmpty, isDragging }: ColumnProps) {
           >
             {isNotEmpty ? (
               tasks.map((task) => (
-                <SortableTaskCard key={task.id} task={task} />
+                <SortableTaskCard
+                  key={task.id}
+                  task={task}
+                  disabled={disabled}
+                />
               ))
             ) : (
               <p
@@ -163,6 +179,7 @@ function Column({ col, tasks, isNotEmpty, isDragging }: ColumnProps) {
 
 function TaskKanbanPage({ onToggleView }: { onToggleView: () => void }) {
   const dispatch = useAppDispatch();
+  const { saving, run } = usePersistSubmit();
   const tasks = useAppSelector(selectAllTasks);
   const [formOpen, setFormOpen] = useState(false);
 
@@ -199,14 +216,16 @@ function TaskKanbanPage({ onToggleView }: { onToggleView: () => void }) {
     if (newStatus && COLUMNS.some((c) => c.status === newStatus)) {
       const task = tasks.find((t) => t.id === taskId);
       if (task && task.status !== newStatus) {
-        dispatch(setTaskStatus({ taskId, status: newStatus }));
-        dispatch(
-          addNotification(
-            'Task moved',
-            `"${task.title}" moved to ${newStatus}.`,
-            'success'
-          )
-        );
+        run(() => {
+          dispatch(setTaskStatus({ taskId, status: newStatus }));
+          dispatch(
+            addNotification(
+              'Task moved',
+              `"${task.title}" moved to ${newStatus}.`,
+              'success'
+            )
+          );
+        });
       }
     }
   };
@@ -220,8 +239,13 @@ function TaskKanbanPage({ onToggleView }: { onToggleView: () => void }) {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-2xl font-bold text-foreground">Tasks — Kanban</h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="flex items-center gap-2 text-sm text-muted-foreground">
             Drag tasks between columns to change status
+            {saving && (
+              <span className="inline-flex items-center gap-1 text-xs font-medium text-primary">
+                <Spinner size="sm" className="h-3 w-3" /> Moving…
+              </span>
+            )}
           </p>
         </div>
         <div className="flex gap-2">
@@ -251,6 +275,7 @@ function TaskKanbanPage({ onToggleView }: { onToggleView: () => void }) {
               tasks={tasksByStatus[col.status]}
               isNotEmpty={tasksByStatus[col.status].length > 0}
               isDragging={activeId !== null}
+              disabled={saving}
             />
           ))}
         </div>
