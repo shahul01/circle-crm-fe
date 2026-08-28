@@ -22,7 +22,7 @@ import {
   TabsContent,
   EmptyState,
   Spinner,
-} from '@/lib/components';
+} from '@/components/ui';
 import {
   ArrowLeft,
   Plus,

@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import type { ErrorInfo, ReactNode } from 'react';
-import { Button } from '@/lib/components';
+import { Button } from '@/components/ui';
 import { AlertTriangle } from 'lucide-react';
 
 interface ErrorBoundaryProps {

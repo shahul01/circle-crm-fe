@@ -29,7 +29,7 @@ import {
   CardTitle,
   CardContent,
   Spinner,
-} from '@/lib/components';
+} from '@/components/ui';
 import { Plus, List } from 'lucide-react';
 import type { Task, TaskStatus, TaskPriority } from '@/types';
 

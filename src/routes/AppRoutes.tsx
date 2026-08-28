@@ -10,7 +10,7 @@ import LeadListPage from '@/pages/leads/lead-list-page';
 import TasksPage from '@/pages/tasks/tasks-page';
 import NotFoundPage from '@/pages/NotFoundPage';
 import { ErrorBoundary } from '@/components/error-boundary';
-import { ToastContainer } from '@/lib/components';
+import { ToastContainer } from '@/components/ui';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import {
   selectNotifications,

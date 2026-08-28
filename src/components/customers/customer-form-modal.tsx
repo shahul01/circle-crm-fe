@@ -25,7 +25,7 @@ import {
   SelectContent,
   SelectItem,
   Spinner,
-} from '@/lib/components';
+} from '@/components/ui';
 
 interface CustomerFormModalProps {
   open: boolean;
