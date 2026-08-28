@@ -37,6 +37,11 @@ import {
   SearchInput,
   ConfirmDialog,
   EmptyState,
+  Select,
+  SelectValue,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
 } from '@/lib/components';
 import {
   Plus,
@@ -158,21 +163,21 @@ function CustomerListPage() {
               placeholder="Search customers..."
               className="sm:w-72"
             />
-            <select
+            <Select
               value={statusFilter}
-              onChange={(e) =>
-                dispatch(
-                  setCustomerStatusFilter(
-                    e.target.value as CustomerStatus | 'All'
-                  )
-                )
+              onValueChange={(v) =>
+                dispatch(setCustomerStatusFilter(v as CustomerStatus | 'All'))
               }
-              className="flex h-9 rounded-lg border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             >
-              <option value="All">All Statuses</option>
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-            </select>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="All Statuses" />
+              </SelectTrigger>
+              <SelectContent align="end">
+                <SelectItem value="All">All Statuses</SelectItem>
+                <SelectItem value="Active">Active</SelectItem>
+                <SelectItem value="Inactive">Inactive</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>

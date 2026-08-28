@@ -39,6 +39,11 @@ import {
   SearchInput,
   ConfirmDialog,
   EmptyState,
+  Select,
+  SelectValue,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
 } from '@/lib/components';
 import {
   Plus,
@@ -199,22 +204,24 @@ function LeadListPage() {
               placeholder="Search leads..."
               className="sm:w-72"
             />
-            <select
+            <Select
               value={statusFilter}
-              onChange={(e) =>
-                dispatch(
-                  setLeadStatusFilter(e.target.value as LeadStatus | 'All')
-                )
+              onValueChange={(v) =>
+                dispatch(setLeadStatusFilter(v as LeadStatus | 'All'))
               }
-              className="flex h-9 rounded-lg border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             >
-              <option value="All">All Statuses</option>
-              {LEAD_STATUS_OPTIONS.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="All Statuses" />
+              </SelectTrigger>
+              <SelectContent align="end">
+                <SelectItem value="All">All Statuses</SelectItem>
+                {LEAD_STATUS_OPTIONS.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {s}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
