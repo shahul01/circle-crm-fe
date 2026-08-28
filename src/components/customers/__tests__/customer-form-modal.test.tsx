@@ -44,7 +44,20 @@ const fillAddForm = async (user: ReturnType<typeof userEvent.setup>) => {
   await user.type(screen.getByLabelText('Phone'), '(555) 111-2222');
   await user.type(screen.getByLabelText('Company'), 'Nova Industries');
   await user.type(screen.getByLabelText('Location'), 'Austin, TX');
-  await user.selectOptions(screen.getByLabelText('Assigned Employee'), 'emp-2');
+  await selectOption(
+    user,
+    'Assigned Employee',
+    'Mike Chen — Account Executive'
+  );
+};
+
+const selectOption = async (
+  user: ReturnType<typeof userEvent.setup>,
+  label: string,
+  displayText: string
+) => {
+  await user.click(screen.getByLabelText(label));
+  await user.click(await screen.findByRole('option', { name: displayText }));
 };
 
 describe('CustomerFormModal', () => {
@@ -112,7 +125,7 @@ describe('CustomerFormModal', () => {
 
     await user.clear(screen.getByLabelText('Name'));
     await user.type(screen.getByLabelText('Name'), 'Renamed Co');
-    await user.selectOptions(screen.getByLabelText('Status'), 'Inactive');
+    await selectOption(user, 'Status', 'Inactive');
     await user.click(screen.getByRole('button', { name: 'Save Changes' }));
 
     const customers = selectAllCustomers({
