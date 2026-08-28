@@ -37,14 +37,26 @@ function ToastItem({ toast, onDismiss }: ToastItemProps) {
 
   const bgColors = {
     default: 'bg-card border-border',
-    success: 'bg-success/10 border-success/30',
-    error: 'bg-destructive/10 border-destructive/30',
+    success: 'bg-success border-success-foreground',
+    error: 'bg-destructive border-destructive-foreground',
   };
 
   const iconColors = {
     default: 'text-primary',
-    success: 'text-success',
-    error: 'text-destructive',
+    success: 'text-success-foreground',
+    error: 'text-destructive-foreground',
+  };
+
+  const textColors = {
+    default: 'text-foreground',
+    success: 'text-success-foreground',
+    error: 'text-destructive-foreground',
+  };
+
+  const mutedTextColors = {
+    default: 'text-muted-foreground',
+    success: 'text-success-foreground/80',
+    error: 'text-destructive-foreground/80',
   };
 
   const handleDismiss = () => {
@@ -70,9 +82,21 @@ function ToastItem({ toast, onDismiss }: ToastItemProps) {
         )}
       />
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-foreground">{toast.title}</p>
+        <p
+          className={cn(
+            'text-sm font-medium',
+            textColors[toast.variant ?? 'default']
+          )}
+        >
+          {toast.title}
+        </p>
         {toast.description && (
-          <p className="mt-1 text-xs text-muted-foreground">
+          <p
+            className={cn(
+              'mt-1 text-xs',
+              mutedTextColors[toast.variant ?? 'default']
+            )}
+          >
             {toast.description}
           </p>
         )}
@@ -80,7 +104,11 @@ function ToastItem({ toast, onDismiss }: ToastItemProps) {
       <Button
         variant="ghost"
         size="icon"
-        className="h-5 w-5 shrink-0 text-muted-foreground hover:text-foreground"
+        className={cn(
+          'h-5 w-5 shrink-0 hover:bg-transparent',
+          mutedTextColors[toast.variant ?? 'default'],
+          'hover:text-foreground'
+        )}
         onClick={handleDismiss}
       >
         <X className="h-3 w-3" />
