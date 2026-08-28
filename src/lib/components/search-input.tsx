@@ -1,4 +1,4 @@
-import { useState, useEffect, type InputHTMLAttributes } from 'react';
+import { useState, useEffect, useRef, type InputHTMLAttributes } from 'react';
 import { Search } from 'lucide-react';
 import { Input } from './input';
 import { cn } from '@/lib/utils';
@@ -18,14 +18,16 @@ function SearchInput({
   ...props
 }: SearchInputProps) {
   const [value, setValue] = useState('');
+  const onSearchRef = useRef(onSearch);
+  onSearchRef.current = onSearch;
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      onSearch(value);
+      onSearchRef.current(value);
     }, debounceMs);
 
     return () => clearTimeout(timeout);
-  }, [value, debounceMs, onSearch]);
+  }, [value, debounceMs]);
 
   return (
     <div className={cn('relative', className)}>
