@@ -18,27 +18,28 @@ A Customer Relationship Management (CRM) web application built with **React.js +
 
 ## Getting Started
 
-Requires Node.js 20+ and pnpm.
+Requires Node.js 20+ and npm.
+I have used pnpm but one can use npm too
 
 ```bash
 # 1. Install dependencies
-pnpm install
+npm install
 
 # 2. Start the dev server
-pnpm dev
+npm run dev
 
 # 3. Build for production
-pnpm build
+npm run build
 
 # 4. Preview the production build
-pnpm preview
+npm run preview
 
 # 5. Run tests
-pnpm test          # one-shot
-pnpm test:watch    # watch mode
+npm run test          # one-shot
+npm run test:watch    # watch mode
 
 # 6. Lint
-pnpm lint
+npm run lint
 ```
 
 ## Mock Credentials
