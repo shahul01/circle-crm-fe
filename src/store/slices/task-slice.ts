@@ -4,15 +4,18 @@ import {
   type PayloadAction,
 } from '@reduxjs/toolkit';
 import type { Task, TaskStatus, TaskPriority } from '@/types';
+import { employeeDisplayName } from '@/services/employees';
 
 interface TaskUI {
   search: string;
   statusFilter: TaskStatus | 'All';
   priorityFilter: TaskPriority | 'All';
-  sortField: keyof Pick<
-    Task,
-    'title' | 'status' | 'priority' | 'dueDate' | 'createdAt'
-  >;
+  sortField:
+    | keyof Pick<
+        Task,
+        'title' | 'status' | 'priority' | 'dueDate' | 'createdAt'
+      >
+    | 'assignedEmployeeId';
   sortDir: 'asc' | 'desc';
   page: number;
   perPage: number;
@@ -162,8 +165,14 @@ export const selectFilteredTasks = (state: { tasks: TaskState }) => {
   }
 
   return [...filtered].sort((a, b) => {
-    const aVal = a[ui.sortField] as string;
-    const bVal = b[ui.sortField] as string;
+    const aVal =
+      ui.sortField === 'assignedEmployeeId'
+        ? employeeDisplayName(a.assignedEmployeeId)
+        : (a[ui.sortField] as string);
+    const bVal =
+      ui.sortField === 'assignedEmployeeId'
+        ? employeeDisplayName(b.assignedEmployeeId)
+        : (b[ui.sortField] as string);
     const cmp = aVal.localeCompare(bVal);
     return ui.sortDir === 'asc' ? cmp : -cmp;
   });
