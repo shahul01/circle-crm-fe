@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import {
   selectPaginatedLeads,
@@ -89,6 +90,7 @@ const STATUS_BADGE_VARIANT: Record<
 
 function LeadListPage() {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const isAdmin = useAppSelector(selectIsAdmin);
   const { items, total, totalPages } = useAppSelector(selectPaginatedLeads);
   const statusFilter = useAppSelector(selectLeadStatusFilter);
@@ -149,6 +151,7 @@ function LeadListPage() {
       )
     );
     setConvertLead(null);
+    navigate('/customers');
   };
 
   const handleExport = () => {
