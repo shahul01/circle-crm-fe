@@ -97,7 +97,7 @@ function DashboardPage() {
           color="bg-secondary"
         />
         <StatCard
-          title="Converted"
+          title="Converted Leads"
           value={convertedLeads}
           icon={ArrowRightLeft}
           color="bg-success"
@@ -109,7 +109,7 @@ function DashboardPage() {
           color="bg-warning"
         />
         <StatCard
-          title="Completed"
+          title="Completed Tasks"
           value={completedTasks}
           icon={CheckCircle2}
           color="bg-accent"
