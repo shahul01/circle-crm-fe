@@ -131,3 +131,10 @@ body {
 #root {
   min-height: 100svh;
 }
+
+.recharts-wrapper *,
+.recharts-surface:focus,
+.recharts-layer:focus,
+.recharts-pie-sector:focus {
+  outline: none !important;
+}

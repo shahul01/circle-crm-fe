@@ -120,6 +120,15 @@ function DashboardPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card>
           <CardHeader>
+            <CardTitle className="text-base">Customer Growth</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <CustomerGrowthChart />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
             <CardTitle className="text-base">Lead Pipeline</CardTitle>
           </CardHeader>
           <CardContent>
@@ -133,15 +142,6 @@ function DashboardPage() {
           </CardHeader>
           <CardContent>
             <TaskStatusChart />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Customer Growth</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <CustomerGrowthChart />
           </CardContent>
         </Card>
       </div>

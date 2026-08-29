@@ -1,527 +1,484 @@
 import type { Customer, Lead, Task } from '@/types';
 
-const CUSTOMER_SEED: Customer[] = [
-  {
-    id: 'cust-1',
-    name: 'Acme Corporation',
-    email: 'info@acme.com',
-    phone: '(555) 123-4567',
-    company: 'Acme Corporation',
-    location: 'New York, NY',
-    status: 'Active',
-    assignedEmployeeId: 'emp-1',
-    createdAt: '2025-01-15T08:00:00Z',
-    notes: [
-      {
-        id: 'n1',
-        content: 'Initial contact via LinkedIn. Interested in enterprise plan.',
-        createdAt: '2025-01-15T08:00:00Z',
-      },
-    ],
-  },
-  {
-    id: 'cust-2',
-    name: 'TechStart Inc',
-    email: 'hello@techstart.io',
-    phone: '(555) 234-5678',
-    company: 'TechStart Inc',
-    location: 'San Francisco, CA',
-    status: 'Active',
-    assignedEmployeeId: 'emp-2',
-    createdAt: '2025-02-10T10:30:00Z',
-    notes: [],
-  },
-  {
-    id: 'cust-3',
-    name: 'Global Solutions',
-    email: 'contact@globalsol.com',
-    phone: '(555) 345-6789',
-    company: 'Global Solutions',
-    location: 'Chicago, IL',
-    status: 'Active',
-    assignedEmployeeId: 'emp-3',
-    createdAt: '2025-03-05T14:00:00Z',
-    notes: [],
-  },
-  {
-    id: 'cust-4',
-    name: 'BlueSky Logistics',
-    email: 'ops@bluesky.com',
-    phone: '(555) 456-7890',
-    company: 'BlueSky Logistics',
-    location: 'Dallas, TX',
-    status: 'Inactive',
-    assignedEmployeeId: 'emp-4',
-    createdAt: '2024-11-20T09:00:00Z',
-    notes: [],
-  },
-  {
-    id: 'cust-5',
-    name: 'Pinnacle Consulting',
-    email: 'team@pinnacle.com',
-    phone: '(555) 567-8901',
-    company: 'Pinnacle Consulting',
-    location: 'Boston, MA',
-    status: 'Active',
-    assignedEmployeeId: 'emp-5',
-    createdAt: '2025-04-12T11:00:00Z',
-    notes: [],
-  },
-  {
-    id: 'cust-6',
-    name: 'NovaTech Solutions',
-    email: 'hello@novatech.com',
-    phone: '(555) 678-9012',
-    company: 'NovaTech Solutions',
-    location: 'Seattle, WA',
-    status: 'Active',
-    assignedEmployeeId: 'emp-1',
-    createdAt: '2025-01-28T09:15:00Z',
-    notes: [
-      {
-        id: 'n2',
-        content: 'Referred by Acme Corporation. Looking for CRM integration.',
-        createdAt: '2025-01-28T09:15:00Z',
-      },
-    ],
-  },
-  {
-    id: 'cust-7',
-    name: 'Evergreen Enterprises',
-    email: 'admin@evergreen.com',
-    phone: '(555) 789-0123',
-    company: 'Evergreen Enterprises',
-    location: 'Portland, OR',
-    status: 'Active',
-    assignedEmployeeId: 'emp-2',
-    createdAt: '2025-02-18T13:45:00Z',
-    notes: [],
-  },
-  {
-    id: 'cust-8',
-    name: 'Silverline Finance',
-    email: 'contact@silverline.com',
-    phone: '(555) 890-1234',
-    company: 'Silverline Finance',
-    location: 'Austin, TX',
-    status: 'Active',
-    assignedEmployeeId: 'emp-3',
-    createdAt: '2025-03-22T10:00:00Z',
-    notes: [],
-  },
-  {
-    id: 'cust-9',
-    name: 'Crestview Media',
-    email: 'info@crestview.com',
-    phone: '(555) 901-2345',
-    company: 'Crestview Media',
-    location: 'Los Angeles, CA',
-    status: 'Inactive',
-    assignedEmployeeId: 'emp-4',
-    createdAt: '2024-10-05T08:30:00Z',
-    notes: [],
-  },
-  {
-    id: 'cust-10',
-    name: 'Atlas Industries',
-    email: 'sales@atlas.com',
-    phone: '(555) 012-3456',
-    company: 'Atlas Industries',
-    location: 'Detroit, MI',
-    status: 'Active',
-    assignedEmployeeId: 'emp-5',
-    createdAt: '2025-04-01T15:20:00Z',
-    notes: [],
-  },
-  {
-    id: 'cust-11',
-    name: 'Summit Healthcare',
-    email: 'ops@summithealth.com',
-    phone: '(555) 111-2222',
-    company: 'Summit Healthcare',
-    location: 'Denver, CO',
-    status: 'Active',
-    assignedEmployeeId: 'emp-1',
-    createdAt: '2025-05-10T11:00:00Z',
-    notes: [
-      {
-        id: 'n3',
-        content:
-          'Healthcare compliance requirements discussed. Need HIPAA-compliant solution.',
-        createdAt: '2025-05-10T11:00:00Z',
-      },
-    ],
-  },
-  {
-    id: 'cust-12',
-    name: 'Rivera & Associates',
-    email: 'contact@rivera.com',
-    phone: '(555) 222-3333',
-    company: 'Rivera & Associates',
-    location: 'Miami, FL',
-    status: 'Active',
-    assignedEmployeeId: 'emp-2',
-    createdAt: '2025-05-22T09:30:00Z',
-    notes: [],
-  },
-  {
-    id: 'cust-13',
-    name: 'ClearView Analytics',
-    email: 'hello@clearview.com',
-    phone: '(555) 333-4444',
-    company: 'ClearView Analytics',
-    location: 'Atlanta, GA',
-    status: 'Inactive',
-    assignedEmployeeId: 'emp-3',
-    createdAt: '2024-09-15T14:00:00Z',
-    notes: [],
-  },
-  {
-    id: 'cust-14',
-    name: 'Iron Peak Construction',
-    email: 'info@ironpeak.com',
-    phone: '(555) 444-5555',
-    company: 'Iron Peak Construction',
-    location: 'Phoenix, AZ',
-    status: 'Active',
-    assignedEmployeeId: 'emp-4',
-    createdAt: '2025-06-01T08:45:00Z',
-    notes: [],
-  },
-  {
-    id: 'cust-15',
-    name: 'Lighthouse Education',
-    email: 'team@lighthouseedu.com',
-    phone: '(555) 555-6666',
-    company: 'Lighthouse Education',
-    location: 'Nashville, TN',
-    status: 'Inactive',
-    assignedEmployeeId: 'emp-5',
-    createdAt: '2024-12-10T16:00:00Z',
-    notes: [],
-  },
+const EMPLOYEE_IDS = ['emp-1', 'emp-2', 'emp-3', 'emp-4', 'emp-5'];
+
+const CUSTOMER_COUNT = 100;
+const LEAD_COUNT = 100;
+const TASK_COUNT = 100;
+
+const CUSTOMER_NAMES = [
+  'Acme Corporation',
+  'TechStart Inc',
+  'Global Solutions',
+  'BlueSky Logistics',
+  'Pinnacle Consulting',
+  'NovaTech Solutions',
+  'Evergreen Enterprises',
+  'Silverline Finance',
+  'Crestview Media',
+  'Atlas Industries',
+  'Summit Healthcare',
+  'Rivera & Associates',
+  'ClearView Analytics',
+  'Iron Peak Construction',
+  'Lighthouse Education',
+  'Horizon Foods',
+  'Vertex Sports',
+  'Cobalt Energy',
+  'Maple Ridge Realty',
+  'Quantum Devices',
+  'Stellar Brands',
+  'Pioneer Shipping',
+  'Falcon Aerospace',
+  'Titan Robotics',
+  'Aura Beauty',
+  'Nimbus Cloud',
+  'Cedar Grove Farms',
+  'Orbit Travel',
+  'Saffron Retail',
+  'Drake Consulting',
+  'Willow Interiors',
+  'Sterling Motors',
+  'Prairie Bank',
+  'Vega Insurance',
+  'Crimson Studios',
+  'Arbor Legal',
+  'Pulse Fitness',
+  'Golden State Hotels',
+  'Metro Transit',
+  'Blue River Data',
+  'Cypress Pharma',
+  'Summit Brewing',
+  'Ironidge Security',
+  'Crown Jewelry',
+  'North Peak Apparel',
+  'Lakeside Gaming',
+  'Echo Marketing',
+  'Fenway Biotech',
+  'Harbor Freight Co',
+  'Aspen Ventures',
+  'Zephyr Airlines',
+  'Granite Mining',
+  'Oasis Energy',
+  'Red Fox Logistics',
+  'Silver Oak Dental',
+  'Canyon Construct',
+  'Lumen Lighting',
+  'Vortex Imaging',
+  'Marigold Flowers',
+  'Cypress Point Bank',
+  'Atlas Freight',
+  'Blue Wave Surf',
+  'Ignite Software',
+  'Summit Realty',
+  'Nova Health',
+  'Peak Performance',
+  'Quartz Analytics',
+  'Ruby Telecom',
+  'Sapphire Travel',
+  'Topaz Gaming',
+  'Azure Cloud',
+  'Crimson Code',
+  'Emerald Energy',
+  'Golden Gate Capital',
+  'Ivory Retail',
+  'Jade Wellness',
+  'Onyx Media',
+  'Pearl Hospitality',
+  'Platinum Motors',
+  'Silverline Tech',
+  'Violet Design',
+  'Amber Consulting',
+  'Bronze Works',
+  'Copper Crates',
+  'Diamond Finance',
+  'Frost Foods',
+  'Galaxy Logistics',
+  'Halo Beauty',
+  'Ironworks',
+  'Juniper Networks',
+  'Kestone Realty',
+  'Lunar Labs',
+  'Magna Motors',
+  'Nexus Systems',
+  'Oakwood Law',
+  'Palmer Pharma',
+  'Quill Press',
 ];
 
-const LEAD_SEED: Lead[] = [
-  {
-    id: 'lead-1',
-    name: 'Meridian Corp',
-    email: 'sales@meridian.com',
-    phone: '(555) 678-9012',
-    company: 'Meridian Corp',
-    status: 'New',
-    assignedEmployeeId: 'emp-1',
-    createdAt: '2025-06-01T08:00:00Z',
-  },
-  {
-    id: 'lead-2',
-    name: 'Vantage Point',
-    email: 'info@vantagepoint.com',
-    phone: '(555) 789-0123',
-    company: 'Vantage Point',
-    status: 'Contacted',
-    assignedEmployeeId: 'emp-2',
-    createdAt: '2025-05-28T10:00:00Z',
-  },
-  {
-    id: 'lead-3',
-    name: 'Summit Health',
-    email: 'exec@summithealth.com',
-    phone: '(555) 890-1234',
-    company: 'Summit Health',
-    status: 'Follow-up',
-    assignedEmployeeId: 'emp-3',
-    createdAt: '2025-05-15T14:30:00Z',
-  },
-  {
-    id: 'lead-4',
-    name: 'BrightPath Media',
-    email: 'team@brightpath.com',
-    phone: '(555) 901-2345',
-    company: 'BrightPath Media',
-    status: 'Qualified',
-    assignedEmployeeId: 'emp-4',
-    createdAt: '2025-05-10T09:00:00Z',
-  },
-  {
-    id: 'lead-5',
-    name: 'Harborview',
-    email: 'admin@harborview.com',
-    phone: '(555) 012-3456',
-    company: 'Harborview',
-    status: 'New',
-    assignedEmployeeId: 'emp-1',
-    createdAt: '2025-06-10T16:00:00Z',
-  },
-  {
-    id: 'lead-6',
-    name: 'Pinnacle Dynamics',
-    email: 'contact@pinnacle-dyn.com',
-    phone: '(555) 111-2222',
-    company: 'Pinnacle Dynamics',
-    status: 'Contacted',
-    assignedEmployeeId: 'emp-3',
-    createdAt: '2025-06-05T11:30:00Z',
-  },
-  {
-    id: 'lead-7',
-    name: 'Zenith Software',
-    email: 'sales@zenithsoft.com',
-    phone: '(555) 222-3333',
-    company: 'Zenith Software',
-    status: 'New',
-    assignedEmployeeId: 'emp-5',
-    createdAt: '2025-06-12T09:00:00Z',
-  },
-  {
-    id: 'lead-8',
-    name: 'Crossroads Logistics',
-    email: 'ops@crossroads.com',
-    phone: '(555) 333-4444',
-    company: 'Crossroads Logistics',
-    status: 'Follow-up',
-    assignedEmployeeId: 'emp-2',
-    createdAt: '2025-05-20T13:15:00Z',
-  },
-  {
-    id: 'lead-9',
-    name: 'Apex Manufacturing',
-    email: 'info@apexmfg.com',
-    phone: '(555) 444-5555',
-    company: 'Apex Manufacturing',
-    status: 'Qualified',
-    assignedEmployeeId: 'emp-4',
-    createdAt: '2025-05-08T08:45:00Z',
-  },
-  {
-    id: 'lead-10',
-    name: 'Greenfield Partners',
-    email: 'hello@greenfield.com',
-    phone: '(555) 555-6666',
-    company: 'Greenfield Partners',
-    status: 'Converted',
-    assignedEmployeeId: 'emp-1',
-    createdAt: '2025-04-15T10:00:00Z',
-  },
-  {
-    id: 'lead-11',
-    name: 'Coastal Ventures',
-    email: 'team@coastalv.com',
-    phone: '(555) 666-7777',
-    company: 'Coastal Ventures',
-    status: 'Contacted',
-    assignedEmployeeId: 'emp-3',
-    createdAt: '2025-06-08T14:30:00Z',
-  },
-  {
-    id: 'lead-12',
-    name: 'NorthStar Analytics',
-    email: 'sales@northstar.com',
-    phone: '(555) 777-8888',
-    company: 'NorthStar Analytics',
-    status: 'Follow-up',
-    assignedEmployeeId: 'emp-5',
-    createdAt: '2025-05-25T09:00:00Z',
-  },
-  {
-    id: 'lead-13',
-    name: 'Redwood Systems',
-    email: 'contact@redwoodsys.com',
-    phone: '(555) 888-9999',
-    company: 'Redwood Systems',
-    status: 'Lost',
-    assignedEmployeeId: 'emp-2',
-    createdAt: '2025-04-20T11:00:00Z',
-  },
-  {
-    id: 'lead-14',
-    name: 'Eagle Eye Security',
-    email: 'info@eagleeye.com',
-    phone: '(555) 999-0000',
-    company: 'Eagle Eye Security',
-    status: 'Converted',
-    assignedEmployeeId: 'emp-4',
-    createdAt: '2025-04-10T15:00:00Z',
-  },
-  {
-    id: 'lead-15',
-    name: 'Cascade Digital',
-    email: 'hello@cascadedigital.com',
-    phone: '(555) 000-1111',
-    company: 'Cascade Digital',
-    status: 'New',
-    assignedEmployeeId: 'emp-1',
-    createdAt: '2025-06-15T08:30:00Z',
-  },
+const LOCATIONS = [
+  'New York, NY',
+  'San Francisco, CA',
+  'Chicago, IL',
+  'Dallas, TX',
+  'Boston, MA',
+  'Seattle, WA',
+  'Portland, OR',
+  'Austin, TX',
+  'Los Angeles, CA',
+  'Detroit, MI',
+  'Denver, CO',
+  'Miami, FL',
+  'Atlanta, GA',
+  'Phoenix, AZ',
+  'Nashville, TN',
+  'San Diego, CA',
+  'Houston, TX',
+  'Philadelphia, PA',
+  'Charlotte, NC',
+  'Columbus, OH',
 ];
 
-const TASK_SEED: Task[] = [
-  {
-    id: 'task-1',
-    title: 'Follow up with Acme Corp',
-    description: 'Send the revised proposal and schedule a demo call.',
-    assignedEmployeeId: 'emp-1',
-    priority: 'High',
-    dueDate: '2025-07-01',
-    status: 'Todo',
-    relatedCustomerId: 'cust-1',
-    createdAt: '2025-06-15T08:00:00Z',
-  },
-  {
-    id: 'task-2',
-    title: 'Prepare onboarding deck',
-    description: 'Create onboarding slide deck for TechStart Inc.',
-    assignedEmployeeId: 'emp-2',
-    priority: 'Medium',
-    dueDate: '2025-07-05',
-    status: 'In Progress',
-    relatedCustomerId: 'cust-2',
-    createdAt: '2025-06-18T10:00:00Z',
-  },
-  {
-    id: 'task-3',
-    title: 'Update CRM documentation',
-    description: 'Refresh the CRM user guide with new features.',
-    assignedEmployeeId: 'emp-3',
-    priority: 'Low',
-    dueDate: '2025-07-10',
-    status: 'Todo',
-    createdAt: '2025-06-20T14:00:00Z',
-  },
-  {
-    id: 'task-4',
-    title: 'Review Q2 pipeline',
-    description: 'Analyze lead conversion rates for the quarterly review.',
-    assignedEmployeeId: 'emp-4',
-    priority: 'High',
-    dueDate: '2025-06-30',
-    status: 'Completed',
-    createdAt: '2025-06-01T09:00:00Z',
-  },
-  {
-    id: 'task-5',
-    title: 'Schedule check-in with BlueSky',
-    description: 'Reach out to the inactive customer for renewal discussion.',
-    assignedEmployeeId: 'emp-5',
-    priority: 'Medium',
-    dueDate: '2025-07-03',
-    status: 'Todo',
-    relatedCustomerId: 'cust-4',
-    createdAt: '2025-06-22T11:00:00Z',
-  },
-  {
-    id: 'task-6',
-    title: 'Send contract to NovaTech',
-    description: 'Draft and send the service agreement for NovaTech Solutions.',
-    assignedEmployeeId: 'emp-1',
-    priority: 'High',
-    dueDate: '2025-07-08',
-    status: 'In Progress',
-    relatedCustomerId: 'cust-6',
-    createdAt: '2025-06-25T09:30:00Z',
-  },
-  {
-    id: 'task-7',
-    title: 'Conduct product demo',
-    description: 'Demo the CRM platform to Evergreen Enterprises stakeholders.',
-    assignedEmployeeId: 'emp-2',
-    priority: 'Medium',
-    dueDate: '2025-07-12',
-    status: 'Todo',
-    relatedCustomerId: 'cust-7',
-    createdAt: '2025-06-28T14:00:00Z',
-  },
-  {
-    id: 'task-8',
-    title: 'Follow up on Silverline proposal',
-    description:
-      'Check if Silverline Finance has reviewed the pricing proposal.',
-    assignedEmployeeId: 'emp-3',
-    priority: 'Low',
-    dueDate: '2025-07-15',
-    status: 'Todo',
-    relatedCustomerId: 'cust-8',
-    createdAt: '2025-06-29T10:15:00Z',
-  },
-  {
-    id: 'task-9',
-    title: 'Prepare monthly sales report',
-    description:
-      'Compile June sales data and conversion metrics for management.',
-    assignedEmployeeId: 'emp-4',
-    priority: 'High',
-    dueDate: '2025-07-02',
-    status: 'In Progress',
-    createdAt: '2025-06-26T08:00:00Z',
-  },
-  {
-    id: 'task-10',
-    title: 'Update Atlas integration plan',
-    description:
-      'Revise the integration roadmap based on Atlas Industries feedback.',
-    assignedEmployeeId: 'emp-5',
-    priority: 'Medium',
-    dueDate: '2025-07-18',
-    status: 'Completed',
-    relatedCustomerId: 'cust-10',
-    createdAt: '2025-06-10T11:00:00Z',
-  },
-  {
-    id: 'task-11',
-    title: 'Onboard Summit Healthcare',
-    description: 'Complete the onboarding checklist for Summit Healthcare.',
-    assignedEmployeeId: 'emp-1',
-    priority: 'High',
-    dueDate: '2025-07-20',
-    status: 'In Progress',
-    relatedCustomerId: 'cust-11',
-    createdAt: '2025-06-30T13:00:00Z',
-  },
-  {
-    id: 'task-12',
-    title: 'Schedule training session',
-    description: 'Arrange CRM training for Rivera & Associates team.',
-    assignedEmployeeId: 'emp-2',
-    priority: 'Low',
-    dueDate: '2025-07-25',
-    status: 'Todo',
-    relatedCustomerId: 'cust-12',
-    createdAt: '2025-07-01T09:00:00Z',
-  },
-  {
-    id: 'task-13',
-    title: 'Audit inactive accounts',
-    description:
-      'Review all inactive customers and prepare re-engagement emails.',
-    assignedEmployeeId: 'emp-3',
-    priority: 'Medium',
-    dueDate: '2025-07-08',
-    status: 'Completed',
-    createdAt: '2025-06-15T10:00:00Z',
-  },
-  {
-    id: 'task-14',
-    title: 'Finalize Q3 targets',
-    description:
-      'Set quarterly sales targets based on current pipeline analysis.',
-    assignedEmployeeId: 'emp-4',
-    priority: 'High',
-    dueDate: '2025-07-05',
-    status: 'Completed',
-    createdAt: '2025-06-20T08:30:00Z',
-  },
-  {
-    id: 'task-15',
-    title: 'Review NPS survey results',
-    description:
-      'Analyze customer satisfaction scores and prepare action items.',
-    assignedEmployeeId: 'emp-5',
-    priority: 'Low',
-    dueDate: '2025-07-22',
-    status: 'In Progress',
-    createdAt: '2025-07-02T14:30:00Z',
-  },
+const FIRST_NAMES = [
+  'James',
+  'Mary',
+  'Robert',
+  'Patricia',
+  'John',
+  'Jennifer',
+  'Michael',
+  'Linda',
+  'David',
+  'Elizabeth',
+  'William',
+  'Susan',
+  'Richard',
+  'Jessica',
+  'Joseph',
+  'Sarah',
+  'Thomas',
+  'Karen',
+  'Charles',
+  'Lisa',
+  'Daniel',
+  'Nancy',
+  'Matthew',
+  'Betty',
+  'Anthony',
+  'Margaret',
+  'Mark',
+  'Sandra',
+  'Steven',
+  'Ashley',
+  'Andrew',
+  'Kimberly',
+  'Joshua',
+  'Emily',
+  'Kevin',
+  'Donna',
+  'Brian',
+  'Michelle',
+  'George',
+  'Carol',
+  'Edward',
+  'Amanda',
+  'Ronald',
+  'Melissa',
+  'Timothy',
+  'Deborah',
+  'Jason',
+  'Stephanie',
+  'Jeffrey',
+  'Rebecca',
 ];
+
+const LAST_NAMES = [
+  'Smith',
+  'Johnson',
+  'Williams',
+  'Brown',
+  'Jones',
+  'Garcia',
+  'Miller',
+  'Davis',
+  'Rodriguez',
+  'Martinez',
+  'Hernandez',
+  'Lopez',
+  'Gonzalez',
+  'Wilson',
+  'Anderson',
+  'Thomas',
+  'Taylor',
+  'Moore',
+  'Jackson',
+  'Martin',
+  'Lee',
+  'Perez',
+  'Thompson',
+  'White',
+  'Harris',
+  'Sanchez',
+  'Clark',
+  'Ramirez',
+  'Lewis',
+  'Robinson',
+  'Walker',
+  'Young',
+  'Allen',
+  'King',
+  'Wright',
+  'Scott',
+  'Torres',
+  'Nguyen',
+  'Hill',
+  'Flores',
+  'Green',
+  'Adams',
+  'Nelson',
+  'Baker',
+  'Hall',
+  'Rivera',
+  'Campbell',
+  'Mitchell',
+  'Carter',
+  'Roberts',
+];
+
+const DOMAINS = [
+  'company.com',
+  'business.io',
+  'enterprises.net',
+  'corp.org',
+  'group.co',
+  'solutions.com',
+  'ventures.io',
+  'partners.net',
+  'systems.org',
+];
+
+const CUSTOMER_NOTE_TEMPLATES = [
+  'Initial contact made. Interested in our enterprise plan.',
+  'Referred by an existing customer. Looking for integration support.',
+  'Compliance requirements discussed during the kickoff call.',
+  'Requested a detailed pricing breakdown before procurement.',
+  'Scheduled a follow-up demo for the entire leadership team.',
+  'Renewal discussion pending. Contract cycle ends at the quarter close.',
+  'Asked for additional training sessions for their support staff.',
+  'Provided feedback on new feature requests for the roadmap.',
+];
+
+const LEAD_STATUSES: Lead['status'][] = [
+  'New',
+  'Contacted',
+  'Follow-up',
+  'Qualified',
+  'Converted',
+  'Lost',
+];
+
+const TASK_TITLES = [
+  'Follow up with {company}',
+  'Send revised proposal to {company}',
+  'Schedule demo call with {company}',
+  'Prepare onboarding deck for {company}',
+  'Review quarterly pipeline',
+  'Update CRM documentation',
+  'Conduct product demo',
+  'Follow up on proposal',
+  'Prepare monthly sales report',
+  'Update integration plan',
+  'Complete onboarding checklist',
+  'Schedule training session',
+  'Audit inactive accounts',
+  'Finalize quarterly targets',
+  'Review NPS survey results',
+  'Renewal discussion with {company}',
+  'Collect feedback from {company}',
+  'Draft service agreement',
+  'Send contract to {company}',
+  'Prepare discovery questions',
+  'Update contact records',
+  'Clean up duplicate entries',
+  'Plan outreach campaign',
+  'Write case study',
+];
+
+const TASK_DESCRIPTIONS = [
+  'Send the revised proposal and schedule a follow-up chat.',
+  'Prepare the onboarding slide deck ahead of the kickoff meeting.',
+  'Refresh the user guide with the latest feature documentation.',
+  'Analyze conversion metrics for the upcoming quarterly review.',
+  'Reach out to the account to discuss renewal terms.',
+  'Draft and send the service agreement for signature.',
+  'Walk stakeholders through the platform capabilities.',
+  'Check whether the pricing proposal has been reviewed.',
+  'Compile monthly sales data and conversion metrics for management.',
+  'Revise the integration roadmap based on client feedback.',
+  'Complete every item on the onboarding checklist before go-live.',
+  'Arrange a hands-on training session for the team.',
+  'Review all inactive accounts and prepare re-engagement emails.',
+  'Set quarterly targets based on the current pipeline analysis.',
+  'Analyze customer satisfaction scores and prepare action items.',
+  'Confirm renewal dates and prepare the contract addendum.',
+  'Gather structured feedback and log it into the account.',
+  'Create the service agreement with updated compliance terms.',
+  'Send the signed contract and confirm receipt.',
+  'Prepare tailored discovery questions for the first call.',
+  'Verify contact details and update central records.',
+  'Merge duplicate entries found during the data audit.',
+  'Plan the outbound campaign for the next quarter.',
+  'Write up a customer success case study for marketing.',
+];
+
+const STATUS_COUNTS: Record<Customer['status'], number> = {
+  Active: 70,
+  Inactive: 30,
+};
+
+const TASK_STATUSES: Task['status'][] = ['Todo', 'In Progress', 'Completed'];
+const TASK_PRIORITIES: Task['priority'][] = ['Low', 'Medium', 'High'];
+
+function mulberry32(seed: number) {
+  let a = seed;
+  return function () {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function buildCustomerSeeds(): Customer[] {
+  const rand = mulberry32(20250101);
+  const customers: Customer[] = [];
+  let namePool = [...CUSTOMER_NAMES];
+  let locationPool = [...LOCATIONS];
+
+  for (let i = 0; i < CUSTOMER_COUNT; i++) {
+    if (namePool.length === 0) {
+      namePool = [...CUSTOMER_NAMES];
+    }
+    if (locationPool.length === 0) {
+      locationPool = [...LOCATIONS];
+    }
+
+    const nameIndex = Math.floor(rand() * namePool.length);
+    const name = namePool.splice(nameIndex, 1)[0];
+
+    const status: Customer['status'] =
+      i < STATUS_COUNTS.Active ? 'Active' : 'Inactive';
+
+    const month = 1 + Math.floor(rand() * 12);
+    const day = 1 + Math.floor(rand() * 28);
+    const year = rand() > 0.3 ? 2025 : 2024;
+    const createdAt = new Date(
+      Date.UTC(year, month - 1, day, 8 + Math.floor(rand() * 10), 0, 0)
+    ).toISOString();
+
+    const locationIndex = Math.floor(rand() * locationPool.length);
+    const location = locationPool.splice(locationIndex, 1)[0];
+
+    const hasNotes = i % 3 === 0;
+    const notes = hasNotes
+      ? [
+          {
+            id: `n-${i + 1}`,
+            content:
+              CUSTOMER_NOTE_TEMPLATES[
+                Math.floor(rand() * CUSTOMER_NOTE_TEMPLATES.length)
+              ],
+            createdAt,
+          },
+        ]
+      : [];
+
+    customers.push({
+      id: `cust-${i + 1}`,
+      name,
+      email: `${name.toLowerCase().replace(/[^a-z0-9]+/g, '')}@${
+        DOMAINS[i % DOMAINS.length]
+      }`,
+      phone: `(${555}) ${String(100 + Math.floor(rand() * 890))}-${String(
+        1000 + Math.floor(rand() * 8900)
+      )}`,
+      company: name,
+      location,
+      status,
+      assignedEmployeeId: EMPLOYEE_IDS[i % EMPLOYEE_IDS.length],
+      createdAt,
+      notes,
+    });
+  }
+
+  return customers;
+}
+
+function buildLeadSeeds(): Lead[] {
+  const rand = mulberry32(20250202);
+  const leads: Lead[] = [];
+
+  for (let i = 0; i < LEAD_COUNT; i++) {
+    const firstName = FIRST_NAMES[Math.floor(rand() * FIRST_NAMES.length)];
+    const lastName = LAST_NAMES[Math.floor(rand() * LAST_NAMES.length)];
+    const company = `${CUSTOMER_NAMES[i % CUSTOMER_NAMES.length]} Partners`;
+
+    const month = 1 + Math.floor(rand() * 12);
+    const day = 1 + Math.floor(rand() * 28);
+    const createdAt = new Date(
+      Date.UTC(2025, month - 1, day, 8 + Math.floor(rand() * 10), 0, 0)
+    ).toISOString();
+
+    leads.push({
+      id: `lead-${i + 1}`,
+      name: `${firstName} ${lastName}`,
+      email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@${
+        DOMAINS[i % DOMAINS.length]
+      }`,
+      phone: `(${555}) ${String(100 + Math.floor(rand() * 890))}-${String(
+        1000 + Math.floor(rand() * 8900)
+      )}`,
+      company,
+      status: LEAD_STATUSES[i % LEAD_STATUSES.length],
+      assignedEmployeeId: EMPLOYEE_IDS[i % EMPLOYEE_IDS.length],
+      createdAt,
+    });
+  }
+
+  return leads;
+}
+
+function buildTaskSeeds(customers: Customer[]): Task[] {
+  const rand = mulberry32(20250303);
+  const tasks: Task[] = [];
+
+  for (let i = 0; i < TASK_COUNT; i++) {
+    const customer = customers[i % customers.length];
+    const titleTemplate = TASK_TITLES[i % TASK_TITLES.length];
+    const title = titleTemplate.includes('{company}')
+      ? titleTemplate.replace('{company}', customer.name)
+      : titleTemplate;
+
+    const dueMonth = 1 + Math.floor(rand() * 12);
+    const dueDay = 1 + Math.floor(rand() * 28);
+    const dueDate = new Date(Date.UTC(2025, dueMonth - 1, dueDay, 0, 0, 0))
+      .toISOString()
+      .slice(0, 10);
+
+    const created = new Date(
+      Date.UTC(2025, 1 + Math.floor(rand() * 5), 1 + Math.floor(rand() * 28))
+    ).toISOString();
+
+    tasks.push({
+      id: `task-${i + 1}`,
+      title,
+      description: TASK_DESCRIPTIONS[i % TASK_DESCRIPTIONS.length],
+      assignedEmployeeId: EMPLOYEE_IDS[i % EMPLOYEE_IDS.length],
+      priority: TASK_PRIORITIES[i % TASK_PRIORITIES.length],
+      dueDate,
+      status: TASK_STATUSES[i % TASK_STATUSES.length],
+      relatedCustomerId: customer.id,
+      createdAt: created,
+    });
+  }
+
+  return tasks;
+}
+
+const CUSTOMER_SEED: Customer[] = buildCustomerSeeds();
+const LEAD_SEED: Lead[] = buildLeadSeeds();
+const TASK_SEED: Task[] = buildTaskSeeds(CUSTOMER_SEED);
 
 export function getSeedState() {
   return {
