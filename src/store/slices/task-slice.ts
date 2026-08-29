@@ -191,6 +191,8 @@ export const selectPaginatedTasks = (state: { tasks: TaskState }) => {
 
 export const selectTaskPage = (state: { tasks: TaskState }) =>
   state.tasks.ui.page;
+export const selectTaskSearch = (state: { tasks: TaskState }) =>
+  state.tasks.ui.search;
 export const selectSelectedTaskIds = (state: { tasks: TaskState }) =>
   state.tasks.ui.selectedIds;
 export const selectTaskStatusFilter = (state: { tasks: TaskState }) =>

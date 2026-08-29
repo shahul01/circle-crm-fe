@@ -1,10 +1,25 @@
-import { test as base } from '@playwright/test';
+import {
+  test as base,
+  expect as expectBase,
+  type Page,
+} from '@playwright/test';
 import { buildSeedPayload, ADMIN_USER, SALES_USER } from '../helpers/seed';
+
+export type PersistedState = {
+  customers: { ids: string[]; entities: Record<string, any>; ui: any };
+  leads: { ids: string[]; entities: Record<string, any>; ui: any };
+  tasks: { ids: string[]; entities: Record<string, any>; ui: any };
+  ui: any;
+};
 
 type TestFixtures = {
   loginAsAdmin: (opts?: { withSeed?: boolean }) => Promise<void>;
   loginAsSales: () => Promise<void>;
   seedAndLogin: () => Promise<void>;
+  waitForPersisted: (
+    predicate: (state: PersistedState) => boolean,
+    timeoutMs?: number
+  ) => Promise<void>;
 };
 
 export const test = base.extend<TestFixtures>({
@@ -65,6 +80,39 @@ export const test = base.extend<TestFixtures>({
       await page.waitForURL('/', { timeout: 5000 });
     });
   },
+
+  waitForPersisted: async ({ page }, use) => {
+    // oxlint-disable-next-line react-hooks/rules-of-hooks -- Playwright fixture use(), not React hook
+    await use(async (predicate, timeoutMs = 10_000) => {
+      await expectBase
+        .poll(
+          async () => {
+            const state = await readPersistedState(page);
+            if (state == null) return false;
+            try {
+              return predicate(state);
+            } catch {
+              // State shape not fully persisted yet — keep polling.
+              return false;
+            }
+          },
+          { timeout: timeoutMs, message: 'Expected state to be persisted' }
+        )
+        .toBe(true);
+    });
+  },
 });
+
+async function readPersistedState(page: Page): Promise<PersistedState | null> {
+  return page.evaluate(() => {
+    const raw = localStorage.getItem('circle_crm_state_v1');
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  });
+}
 
 export { expect } from '@playwright/test';

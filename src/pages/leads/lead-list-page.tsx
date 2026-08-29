@@ -4,6 +4,7 @@ import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import {
   selectPaginatedLeads,
   selectLeadStatusFilter,
+  selectLeadSearch,
   selectLeadSort,
   selectLeadPage,
   selectSelectedLeadIds,
@@ -95,6 +96,7 @@ function LeadListPage() {
   const isAdmin = useAppSelector(selectIsAdmin);
   const { items, total, totalPages } = useAppSelector(selectPaginatedLeads);
   const statusFilter = useAppSelector(selectLeadStatusFilter);
+  const search = useAppSelector(selectLeadSearch);
   const sort = useAppSelector(selectLeadSort);
   const page = useAppSelector(selectLeadPage);
   const selectedIds = useAppSelector(selectSelectedLeadIds);
@@ -204,6 +206,7 @@ function LeadListPage() {
         <CardContent className="p-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <SearchInput
+              value={search}
               onSearch={(v) => dispatch(setLeadSearch(v))}
               placeholder="Search leads..."
               className="sm:w-72"

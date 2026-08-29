@@ -7,23 +7,33 @@ test.describe('Task Management', () => {
   }) => {
     await seedAndLogin();
     await page.goto('/tasks');
+    await page.reload();
     await expect(page.getByRole('heading', { name: 'Tasks' })).toBeVisible();
     await expect(page.getByText('15 tasks total')).toBeVisible();
     await expect(page.locator('table tbody tr')).toHaveCount(10);
   });
 
-  test('should search tasks', async ({ seedAndLogin, page }) => {
+  test('should search tasks', async ({
+    seedAndLogin,
+    page,
+    waitForPersisted,
+  }) => {
     await seedAndLogin();
     await page.goto('/tasks');
     await page.getByPlaceholder('Search tasks...').fill('Acme');
-    await page.waitForTimeout(500);
+    await waitForPersisted((s) => s.tasks.ui.search === 'Acme');
+    await page.reload();
     await expect(
       page.getByText('Follow up with Acme Corp').first()
     ).toBeVisible();
     await expect(page.getByText('Prepare onboarding deck')).not.toBeVisible();
   });
 
-  test('should filter tasks by status', async ({ seedAndLogin, page }) => {
+  test('should filter tasks by status', async ({
+    seedAndLogin,
+    page,
+    waitForPersisted,
+  }) => {
     await seedAndLogin();
     await page.goto('/tasks');
     const statusTrigger = page
@@ -32,11 +42,16 @@ test.describe('Task Management', () => {
       .first();
     await statusTrigger.click();
     await page.getByRole('option', { name: 'Todo' }).click();
-    await page.waitForTimeout(500);
+    await waitForPersisted((s) => s.tasks.ui.statusFilter === 'Todo');
+    await page.reload();
     await expect(page.getByText('6 tasks total')).toBeVisible();
   });
 
-  test('should add a new task', async ({ seedAndLogin, page }) => {
+  test('should add a new task', async ({
+    seedAndLogin,
+    page,
+    waitForPersisted,
+  }) => {
     await seedAndLogin();
     await page.goto('/tasks');
     await page.getByRole('button', { name: /create task/i }).click();
@@ -58,7 +73,8 @@ test.describe('Task Management', () => {
     await page.getByRole('option', { name: /Sarah Johnson/ }).click();
 
     await page.getByRole('button', { name: /^create task$/i }).click();
-    await page.waitForTimeout(500);
+    await waitForPersisted((s) => s.tasks.ids.length === 16);
+    await page.reload();
     await expect(page.getByText('16 tasks total')).toBeVisible();
     await expect(page.getByText('New E2E Task').first()).toBeVisible();
   });
@@ -66,6 +82,7 @@ test.describe('Task Management', () => {
   test('should toggle between list and kanban view', async ({
     seedAndLogin,
     page,
+    waitForPersisted,
   }) => {
     await seedAndLogin();
     await page.goto('/tasks');
@@ -80,11 +97,16 @@ test.describe('Task Management', () => {
     ).toBeVisible();
 
     await page.getByRole('button', { name: 'List View' }).click();
-    await page.waitForTimeout(500);
+    await waitForPersisted((s) => s.ui.tasksView === 'list');
+    await page.reload();
     await expect(page.locator('table')).toBeVisible();
   });
 
-  test('should delete a task', async ({ seedAndLogin, page }) => {
+  test('should delete a task', async ({
+    seedAndLogin,
+    page,
+    waitForPersisted,
+  }) => {
     await seedAndLogin();
     await page.goto('/tasks');
     const checkbox = page
@@ -98,7 +120,8 @@ test.describe('Task Management', () => {
       page.getByRole('heading', { name: 'Delete tasks' })
     ).toBeVisible();
     await page.getByRole('button', { name: /delete all/i }).click();
-    await page.waitForTimeout(500);
+    await waitForPersisted((s) => s.tasks.ids.length === 14);
+    await page.reload();
     await expect(page.getByText('14 tasks total')).toBeVisible();
   });
 });

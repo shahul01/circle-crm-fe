@@ -4,6 +4,7 @@ import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import {
   selectPaginatedCustomers,
   selectCustomerStatusFilter,
+  selectCustomerSearch,
   selectCustomerSort,
   selectCustomerPage,
   selectSelectedCustomerIds,
@@ -79,6 +80,7 @@ function CustomerListPage() {
   const isAdmin = useAppSelector(selectIsAdmin);
   const { items, total, totalPages } = useAppSelector(selectPaginatedCustomers);
   const statusFilter = useAppSelector(selectCustomerStatusFilter);
+  const search = useAppSelector(selectCustomerSearch);
   const sort = useAppSelector(selectCustomerSort);
   const page = useAppSelector(selectCustomerPage);
   const selectedIds = useAppSelector(selectSelectedCustomerIds);
@@ -160,6 +162,7 @@ function CustomerListPage() {
         <CardContent className="p-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <SearchInput
+              value={search}
               onSearch={(v) => dispatch(setCustomerSearch(v))}
               placeholder="Search customers..."
               className="sm:w-72"

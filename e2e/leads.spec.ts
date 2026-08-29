@@ -7,21 +7,31 @@ test.describe('Lead Management', () => {
   }) => {
     await seedAndLogin();
     await page.goto('/leads');
+    await page.reload();
     await expect(page.getByRole('heading', { name: 'Leads' })).toBeVisible();
     await expect(page.getByText('15 leads total')).toBeVisible();
     await expect(page.locator('table tbody tr')).toHaveCount(10);
   });
 
-  test('should search leads', async ({ seedAndLogin, page }) => {
+  test('should search leads', async ({
+    seedAndLogin,
+    page,
+    waitForPersisted,
+  }) => {
     await seedAndLogin();
     await page.goto('/leads');
     await page.getByPlaceholder('Search leads...').fill('Meridian');
-    await page.waitForTimeout(500);
+    await waitForPersisted((s) => s.leads.ui.search === 'Meridian');
+    await page.reload();
     await expect(page.getByText('Meridian Corp').first()).toBeVisible();
     await expect(page.getByText('Vantage Point')).not.toBeVisible();
   });
 
-  test('should filter leads by status', async ({ seedAndLogin, page }) => {
+  test('should filter leads by status', async ({
+    seedAndLogin,
+    page,
+    waitForPersisted,
+  }) => {
     await seedAndLogin();
     await page.goto('/leads');
     const trigger = page
@@ -30,12 +40,17 @@ test.describe('Lead Management', () => {
       .first();
     await trigger.click();
     await page.getByRole('option', { name: 'New' }).click();
-    await page.waitForTimeout(500);
+    await waitForPersisted((s) => s.leads.ui.statusFilter === 'New');
+    await page.reload();
     await expect(page.getByText('4 leads total')).toBeVisible();
     await expect(page.getByText('Meridian Corp').first()).toBeVisible();
   });
 
-  test('should add a new lead', async ({ seedAndLogin, page }) => {
+  test('should add a new lead', async ({
+    seedAndLogin,
+    page,
+    waitForPersisted,
+  }) => {
     await seedAndLogin();
     await page.goto('/leads');
     await page.getByRole('button', { name: /add lead/i }).click();
@@ -50,12 +65,17 @@ test.describe('Lead Management', () => {
     await page.getByRole('option', { name: /Sarah Johnson/ }).click();
 
     await page.getByRole('button', { name: /^add lead$/i }).click();
-    await page.waitForTimeout(500);
+    await waitForPersisted((s) => s.leads.ids.length === 16);
+    await page.reload();
     await expect(page.getByText('16 leads total')).toBeVisible();
     await expect(page.getByText('New Test Lead').first()).toBeVisible();
   });
 
-  test('should convert lead to customer', async ({ seedAndLogin, page }) => {
+  test('should convert lead to customer', async ({
+    seedAndLogin,
+    page,
+    waitForPersisted,
+  }) => {
     await seedAndLogin();
     await page.goto('/leads');
     const convertButtons = page.locator('button[title="Convert to customer"]');
@@ -64,7 +84,9 @@ test.describe('Lead Management', () => {
       page.getByRole('heading', { name: 'Convert lead to customer' })
     ).toBeVisible();
     await page.getByRole('button', { name: /convert/i }).click();
-    await page.waitForTimeout(1000);
+    await page.waitForURL('**/customers', { timeout: 5000 });
+    await waitForPersisted((s) => s.customers.ids.length === 16);
+    await page.reload();
     await expect(
       page.getByRole('heading', { name: 'Customers' })
     ).toBeVisible();
