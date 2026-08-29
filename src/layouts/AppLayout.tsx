@@ -136,8 +136,10 @@ function AppLayout() {
         </div>
       </aside>
 
-      {/* Main area */}
-      <div className="flex flex-1 flex-col">
+      {/* Main area. min-w-0 lets this flex item shrink below its content's
+          min-width so wide tables scroll inside their own containers instead
+          of blowing out the page horizontally on mobile. */}
+      <div className="flex min-w-0 flex-1 flex-col">
         {/* Top bar */}
         <header className="flex h-14 items-center gap-4 border-b border-border bg-card/80 backdrop-blur-sm px-4 lg:px-6">
           <button
