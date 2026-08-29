@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
   PieChart,
   Pie,
@@ -22,6 +22,7 @@ const STATUS_COLORS: Record<LeadStatus, string> = {
 
 export function LeadPipelineChart() {
   const leads = useAppSelector(selectAllLeads);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   const data = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -54,11 +55,16 @@ export function LeadPipelineChart() {
           paddingAngle={3}
           dataKey="value"
           stroke="none"
+          onMouseEnter={(_, index) => setActiveIndex(index)}
+          onMouseLeave={() => setActiveIndex(null)}
         >
-          {data.map((entry) => (
+          {data.map((entry, i) => (
             <Cell
               key={entry.name}
               fill={STATUS_COLORS[entry.name as LeadStatus]}
+              fillOpacity={activeIndex === i ? 0.5 : 0.15}
+              stroke={STATUS_COLORS[entry.name as LeadStatus]}
+              strokeWidth={2}
             />
           ))}
         </Pie>
@@ -67,6 +73,7 @@ export function LeadPipelineChart() {
             borderRadius: '0.75rem',
             border: '1px solid hsl(214 32% 88%)',
             background: 'hsl(0 0% 100%)',
+            color: 'hsl(222 47% 11%)',
             fontSize: '0.8125rem',
           }}
         />

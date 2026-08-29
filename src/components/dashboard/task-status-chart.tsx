@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import {
   BarChart,
   Bar,
+  Rectangle,
   XAxis,
   YAxis,
   Tooltip,
@@ -17,6 +18,21 @@ const STATUS_COLORS: Record<TaskStatus, string> = {
   'In Progress': 'hsl(38 92% 45%)',
   Completed: 'hsl(142 71% 35%)',
 };
+
+function ActiveBar(props: { payload?: { name?: string }; name?: string }) {
+  const color =
+    STATUS_COLORS[(props.payload?.name ?? props.name) as TaskStatus];
+  return (
+    <Rectangle
+      {...props}
+      fill={color}
+      fillOpacity={0.5}
+      stroke={color}
+      strokeWidth={2}
+      radius={[6, 6, 0, 0]}
+    />
+  );
+}
 
 export function TaskStatusChart() {
   const tasks = useAppSelector(selectAllTasks);
@@ -56,18 +72,27 @@ export function TaskStatusChart() {
           tickLine={false}
         />
         <Tooltip
+          cursor={false}
           contentStyle={{
             borderRadius: '0.75rem',
             border: '1px solid hsl(214 32% 88%)',
             background: 'hsl(0 0% 100%)',
+            color: 'hsl(222 47% 11%)',
             fontSize: '0.8125rem',
           }}
         />
-        <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+        <Bar
+          dataKey="value"
+          strokeWidth={2}
+          radius={[6, 6, 0, 0]}
+          activeBar={ActiveBar}
+        >
           {data.map((entry) => (
             <Cell
               key={entry.name}
               fill={STATUS_COLORS[entry.name as TaskStatus]}
+              fillOpacity={0.15}
+              stroke={STATUS_COLORS[entry.name as TaskStatus]}
             />
           ))}
         </Bar>
