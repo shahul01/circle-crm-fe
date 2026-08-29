@@ -137,7 +137,7 @@ function Column({ col, tasks, isNotEmpty, isDragging, disabled }: ColumnProps) {
           </Badge>
         </CardTitle>
       </CardHeader>
-      <CardContent className="pt-0">
+      <CardContent className="pt-0 max-h-[60dvh] md:max-h-[75dvh] overflow-y-auto">
         <SortableContext
           items={tasks.map((t) => t.id)}
           strategy={verticalListSortingStrategy}
