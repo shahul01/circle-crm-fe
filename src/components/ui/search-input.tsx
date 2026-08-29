@@ -9,15 +9,17 @@ interface SearchInputProps extends Omit<
 > {
   onSearch: (value: string) => void;
   debounceMs?: number;
+  value?: string;
 }
 
 function SearchInput({
   onSearch,
   debounceMs = 300,
   className,
+  value: externalValue,
   ...props
 }: SearchInputProps) {
-  const [value, setValue] = useState('');
+  const [value, setValue] = useState(externalValue ?? '');
   const onSearchRef = useRef(onSearch);
   onSearchRef.current = onSearch;
 

@@ -4,6 +4,7 @@ import {
   selectPaginatedTasks,
   selectTaskStatusFilter,
   selectTaskPriorityFilter,
+  selectTaskSearch,
   selectTaskSort,
   selectTaskPage,
   selectSelectedTaskIds,
@@ -98,6 +99,7 @@ function TaskListPage({ onToggleView }: { onToggleView: () => void }) {
   const { items, total, totalPages } = useAppSelector(selectPaginatedTasks);
   const statusFilter = useAppSelector(selectTaskStatusFilter);
   const priorityFilter = useAppSelector(selectTaskPriorityFilter);
+  const search = useAppSelector(selectTaskSearch);
   const sort = useAppSelector(selectTaskSort);
   const page = useAppSelector(selectTaskPage);
   const selectedIds = useAppSelector(selectSelectedTaskIds);
@@ -171,6 +173,7 @@ function TaskListPage({ onToggleView }: { onToggleView: () => void }) {
         <CardContent className="p-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <SearchInput
+              value={search}
               onSearch={(v) => dispatch(setTaskSearch(v))}
               placeholder="Search tasks..."
               className="sm:w-72"
