@@ -31,6 +31,7 @@ function AppLayout() {
   const user = useAppSelector(selectUser);
   const theme = useAppSelector(selectTheme);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   useEffect(() => {
@@ -51,6 +52,14 @@ function AppLayout() {
     dispatch(toggleTheme());
   };
 
+  const handleSidebarToggle = () => {
+    if (window.matchMedia('(max-width: 1023px)').matches) {
+      setSidebarOpen((v) => !v);
+    } else {
+      setCollapsed((v) => !v);
+    }
+  };
+
   return (
     <div className="flex min-h-svh bg-background">
       {/* Mobile overlay */}
@@ -64,18 +73,31 @@ function AppLayout() {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-40 w-64 border-r border-border bg-card transition-transform duration-200',
-          'lg:translate-x-0 lg:static',
+          'fixed inset-y-0 left-0 z-40 w-64 border-r border-border bg-card transition-all duration-300',
+          'lg:static lg:translate-x-0',
+          collapsed ? 'lg:w-16' : 'lg:w-64',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
         <div className="flex h-full flex-col">
           {/* Brand */}
           <div className="flex h-14 items-center gap-2 border-b border-border px-4">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground text-sm font-bold">
+            <div
+              className={cn(
+                'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground text-sm font-bold',
+                collapsed && 'lg:mx-auto'
+              )}
+            >
               C
             </div>
-            <span className="font-semibold text-foreground">Circle CRM</span>
+            <span
+              className={cn(
+                'font-semibold text-foreground',
+                collapsed && 'lg:hidden'
+              )}
+            >
+              Circle CRM
+            </span>
             <button
               className="ml-auto text-muted-foreground hover:text-foreground lg:hidden"
               onClick={() => setSidebarOpen(false)}
@@ -94,16 +116,20 @@ function AppLayout() {
                 <Link
                   key={item.to}
                   to={item.to}
+                  title={item.label}
                   onClick={() => setSidebarOpen(false)}
                   className={cn(
-                    'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                    'flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                    collapsed ? 'lg:justify-center lg:px-0' : 'gap-3',
                     isActive
                       ? 'bg-primary/10 text-primary'
                       : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                   )}
                 >
-                  <item.icon className="h-4 w-4" />
-                  {item.label}
+                  <item.icon className="h-4 w-4 shrink-0" />
+                  <span className={cn(collapsed && 'lg:hidden')}>
+                    {item.label}
+                  </span>
                 </Link>
               );
             })}
@@ -111,11 +137,21 @@ function AppLayout() {
 
           {/* User section */}
           <div className="border-t border-border p-3">
-            <div className="flex items-center gap-3 rounded-lg px-3 py-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-secondary-foreground text-xs font-medium">
+            <div
+              className={cn(
+                'flex items-center rounded-lg px-2 py-2',
+                collapsed ? 'lg:justify-center' : 'gap-3'
+              )}
+            >
+              <div
+                className={cn(
+                  'flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground text-xs font-medium',
+                  collapsed && 'lg:hidden'
+                )}
+              >
                 {user?.name?.charAt(0) ?? 'U'}
               </div>
-              <div className="flex-1 min-w-0">
+              <div className={cn('flex-1 min-w-0', collapsed && 'lg:hidden')}>
                 <p className="text-sm font-medium text-foreground truncate">
                   {user?.name}
                 </p>
@@ -128,6 +164,7 @@ function AppLayout() {
                 size="icon"
                 className="h-8 w-8 text-muted-foreground hover:text-foreground"
                 onClick={() => setConfirmOpen(true)}
+                aria-label="Sign out"
               >
                 <LogOut className="h-4 w-4" />
               </Button>
@@ -142,12 +179,15 @@ function AppLayout() {
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Top bar */}
         <header className="flex h-14 items-center gap-4 border-b border-border bg-card/80 backdrop-blur-sm px-4 lg:px-6">
-          <button
-            className="text-muted-foreground hover:text-foreground lg:hidden"
-            onClick={() => setSidebarOpen(true)}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-muted-foreground hover:text-foreground"
+            onClick={handleSidebarToggle}
+            aria-label="Toggle sidebar"
           >
             <Menu className="h-5 w-5" />
-          </button>
+          </Button>
           <div className="flex-1" />
           <Button variant="ghost" size="icon" onClick={handleThemeToggle}>
             {theme === 'dark' ? (

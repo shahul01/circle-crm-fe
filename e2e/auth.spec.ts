@@ -1,4 +1,5 @@
 import { test, expect } from './fixtures/base';
+import { CUSTOMER_COUNT } from '../src/services/seed';
 
 test.describe('Authentication', () => {
   test('should show validation errors for empty fields', async ({ page }) => {
@@ -23,7 +24,7 @@ test.describe('Authentication', () => {
     await expect(
       page.getByRole('heading', { name: 'Dashboard' })
     ).toBeVisible();
-    await expect(page.getByText('15').first()).toBeVisible();
+    await expect(page.getByText(String(CUSTOMER_COUNT)).first()).toBeVisible();
   });
 
   test('should redirect unauthenticated users to login', async ({ page }) => {

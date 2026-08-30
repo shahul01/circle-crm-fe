@@ -15,7 +15,8 @@ interface TaskUI {
         Task,
         'title' | 'status' | 'priority' | 'dueDate' | 'createdAt'
       >
-    | 'assignedEmployeeId';
+    | 'assignedEmployeeId'
+    | 'board';
   sortDir: 'asc' | 'desc';
   page: number;
   perPage: number;
@@ -143,6 +144,34 @@ const adapterSelectors = taskAdapter.getSelectors(selectTaskState);
 export const selectAllTasks = adapterSelectors.selectAll;
 export const selectTaskById = adapterSelectors.selectById;
 
+const BOARD_STATUS_ORDER: Record<TaskStatus, number> = {
+  Todo: 0,
+  'In Progress': 1,
+  Completed: 2,
+};
+
+function compareTasksBySort(
+  a: Task,
+  b: Task,
+  field: TaskUI['sortField']
+): number {
+  if (field === 'board') {
+    const orderDiff =
+      BOARD_STATUS_ORDER[a.status] - BOARD_STATUS_ORDER[b.status];
+    if (orderDiff !== 0) return orderDiff;
+    const aPos = a.position ?? Number.MAX_SAFE_INTEGER;
+    const bPos = b.position ?? Number.MAX_SAFE_INTEGER;
+    if (aPos !== bPos) return aPos - bPos;
+    return a.createdAt.localeCompare(b.createdAt);
+  }
+  if (field === 'assignedEmployeeId') {
+    return employeeDisplayName(a.assignedEmployeeId).localeCompare(
+      employeeDisplayName(b.assignedEmployeeId)
+    );
+  }
+  return String(a[field] ?? '').localeCompare(String(b[field] ?? ''));
+}
+
 export const selectFilteredTasks = (state: { tasks: TaskState }) => {
   const { entities, ids, ui } = state.tasks;
   let filtered = ids.map((id) => entities[id]).filter(Boolean);
@@ -165,15 +194,7 @@ export const selectFilteredTasks = (state: { tasks: TaskState }) => {
   }
 
   return [...filtered].sort((a, b) => {
-    const aVal =
-      ui.sortField === 'assignedEmployeeId'
-        ? employeeDisplayName(a.assignedEmployeeId)
-        : (a[ui.sortField] as string);
-    const bVal =
-      ui.sortField === 'assignedEmployeeId'
-        ? employeeDisplayName(b.assignedEmployeeId)
-        : (b[ui.sortField] as string);
-    const cmp = aVal.localeCompare(bVal);
+    const cmp = compareTasksBySort(a, b, ui.sortField);
     return ui.sortDir === 'asc' ? cmp : -cmp;
   });
 };

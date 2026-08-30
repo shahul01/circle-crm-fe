@@ -112,6 +112,7 @@ export function TaskFormModal({
             id: `task-${Date.now()}`,
             ...payload,
             createdAt: new Date().toISOString(),
+            position: Date.now(),
           })
         );
         dispatch(

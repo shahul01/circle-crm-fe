@@ -61,7 +61,8 @@ type SortField =
   | 'priority'
   | 'dueDate'
   | 'createdAt'
-  | 'assignedEmployeeId';
+  | 'assignedEmployeeId'
+  | 'board';
 
 function SortIcon({
   field,
@@ -255,6 +256,15 @@ function TaskListPage({ onToggleView }: { onToggleView: () => void }) {
                     </TableHead>
                     <TableHead>
                       <button
+                        onClick={() => handleSort('status')}
+                        className="hover:text-foreground"
+                      >
+                        Status
+                        <SortIcon field="status" sort={sort} />
+                      </button>
+                    </TableHead>
+                    <TableHead>
+                      <button
                         onClick={() => handleSort('priority')}
                         className="hover:text-foreground"
                       >
@@ -262,13 +272,13 @@ function TaskListPage({ onToggleView }: { onToggleView: () => void }) {
                         <SortIcon field="priority" sort={sort} />
                       </button>
                     </TableHead>
-                    <TableHead>
+                    <TableHead className="hidden sm:table-cell">
                       <button
-                        onClick={() => handleSort('status')}
+                        onClick={() => handleSort('board')}
                         className="hover:text-foreground"
                       >
-                        Status
-                        <SortIcon field="status" sort={sort} />
+                        Board
+                        <SortIcon field="board" sort={sort} />
                       </button>
                     </TableHead>
                     <TableHead className="hidden md:table-cell">
@@ -318,14 +328,17 @@ function TaskListPage({ onToggleView }: { onToggleView: () => void }) {
                         {t.title}
                       </TableCell>
                       <TableCell>
+                        <Badge variant={STATUS_BADGE[t.status]}>
+                          {t.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
                         <Badge variant={PRIORITY_BADGE[t.priority]}>
                           {t.priority}
                         </Badge>
                       </TableCell>
-                      <TableCell>
-                        <Badge variant={STATUS_BADGE[t.status]}>
-                          {t.status}
-                        </Badge>
+                      <TableCell className="hidden sm:table-cell text-muted-foreground">
+                        {t.position != null ? `#${t.position + 1}` : '—'}
                       </TableCell>
                       <TableCell className="hidden md:table-cell text-muted-foreground">
                         {t.dueDate
