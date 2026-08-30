@@ -50,6 +50,8 @@ export interface Task {
   status: TaskStatus;
   relatedCustomerId?: string;
   createdAt: string;
+  /** Column ordering for the kanban board. Absent on legacy/persisted tasks. */
+  position?: number;
 }
 
 export interface Note {

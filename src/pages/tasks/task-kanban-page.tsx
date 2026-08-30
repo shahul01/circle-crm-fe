@@ -1,12 +1,15 @@
 import { useState, useMemo } from 'react';
 import {
   DndContext,
+  DragOverlay,
   closestCorners,
   PointerSensor,
   useDroppable,
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DragStartEvent,
+  type DragOverEvent,
 } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -17,7 +20,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { cn } from '@/lib/utils';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { usePersistSubmit } from '@/hooks/use-persist-submit';
-import { selectAllTasks, setTaskStatus } from '@/store/slices/task-slice';
+import { selectAllTasks, updateTask } from '@/store/slices/task-slice';
 import { addNotification } from '@/store/slices/notification-slice';
 import { EMPLOYEES } from '@/services/employees';
 import { TaskFormModal } from '@/components/tasks/task-form-modal';
@@ -49,6 +52,33 @@ const PRIORITY_BADGE: Record<
   Medium: 'warning',
   Low: 'secondary',
 };
+
+function TaskCard({ task }: { task: Task }) {
+  return (
+    <>
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-sm font-medium text-foreground">{task.title}</p>
+        <Badge
+          variant={PRIORITY_BADGE[task.priority]}
+          className="shrink-0 text-[10px]"
+        >
+          {task.priority}
+        </Badge>
+      </div>
+      {task.description && (
+        <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+          {task.description}
+        </p>
+      )}
+      <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
+        <span>{employeeMap.get(task.assignedEmployeeId) ?? 'Unassigned'}</span>
+        {task.dueDate && (
+          <span>{new Date(task.dueDate).toLocaleDateString()}</span>
+        )}
+      </div>
+    </>
+  );
+}
 
 function SortableTaskCard({
   task,
@@ -83,26 +113,7 @@ function SortableTaskCard({
         disabled && 'pointer-events-none cursor-wait opacity-70'
       )}
     >
-      <div className="flex items-start justify-between gap-2">
-        <p className="text-sm font-medium text-foreground">{task.title}</p>
-        <Badge
-          variant={PRIORITY_BADGE[task.priority]}
-          className="shrink-0 text-[10px]"
-        >
-          {task.priority}
-        </Badge>
-      </div>
-      {task.description && (
-        <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
-          {task.description}
-        </p>
-      )}
-      <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
-        <span>{employeeMap.get(task.assignedEmployeeId) ?? 'Unassigned'}</span>
-        {task.dueDate && (
-          <span>{new Date(task.dueDate).toLocaleDateString()}</span>
-        )}
-      </div>
+      <TaskCard task={task} />
     </div>
   );
 }
@@ -111,11 +122,17 @@ interface ColumnProps {
   col: (typeof COLUMNS)[number];
   tasks: Task[];
   isNotEmpty: boolean;
-  isDragging: boolean;
+  isDropTarget: boolean;
   disabled?: boolean;
 }
 
-function Column({ col, tasks, isNotEmpty, isDragging, disabled }: ColumnProps) {
+function Column({
+  col,
+  tasks,
+  isNotEmpty,
+  isDropTarget,
+  disabled,
+}: ColumnProps) {
   const { setNodeRef, isOver: isOverDroppable } = useDroppable({
     id: col.status,
     data: { status: col.status },
@@ -146,10 +163,8 @@ function Column({ col, tasks, isNotEmpty, isDragging, disabled }: ColumnProps) {
             ref={setNodeRef}
             className={cn(
               'min-h-[100px] space-y-2 rounded-lg transition-colors',
-              !isNotEmpty &&
-                (isDragging
-                  ? 'border-2 border-dashed border-primary/50'
-                  : 'border-2 border-dashed border-transparent')
+              isDropTarget &&
+                'border-2 border-dashed border-primary/50 bg-primary/5'
             )}
           >
             {isNotEmpty ? (
@@ -164,10 +179,10 @@ function Column({ col, tasks, isNotEmpty, isDragging, disabled }: ColumnProps) {
               <p
                 className={cn(
                   'py-8 text-center text-xs text-muted-foreground',
-                  isDragging && 'text-primary'
+                  isDropTarget && 'font-medium text-primary'
                 )}
               >
-                {isDragging ? 'Drop here' : 'No tasks'}
+                {isDropTarget ? 'Drop here' : 'No tasks'}
               </p>
             )}
           </div>
@@ -175,6 +190,29 @@ function Column({ col, tasks, isNotEmpty, isDragging, disabled }: ColumnProps) {
       </CardContent>
     </Card>
   );
+}
+
+function resolveDropColumn(
+  overId: string | null,
+  tasks: Task[]
+): TaskStatus | null {
+  if (!overId) return null;
+  if (COLUMNS.some((c) => c.status === overId)) {
+    return overId as TaskStatus;
+  }
+  const overTask = tasks.find((t) => t.id === overId);
+  return overTask ? overTask.status : null;
+}
+
+function compareTasks(a: Task, b: Task): number {
+  if (a.position != null && b.position != null) {
+    return a.position - b.position;
+  }
+  if (a.position != null) return -1;
+  if (b.position != null) return 1;
+  const byCreated = a.createdAt.localeCompare(b.createdAt);
+  if (byCreated !== 0) return byCreated;
+  return a.id.localeCompare(b.id);
 }
 
 function TaskKanbanPage({ onToggleView }: { onToggleView: () => void }) {
@@ -188,6 +226,7 @@ function TaskKanbanPage({ onToggleView }: { onToggleView: () => void }) {
   );
 
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [overId, setOverId] = useState<string | null>(null);
 
   const tasksByStatus = useMemo(() => {
     const map: Record<TaskStatus, Task[]> = {
@@ -198,40 +237,100 @@ function TaskKanbanPage({ onToggleView }: { onToggleView: () => void }) {
     for (const t of tasks) {
       if (map[t.status]) map[t.status].push(t);
     }
+    for (const status of Object.keys(map) as TaskStatus[]) {
+      map[status].sort(compareTasks);
+    }
     return map;
   }, [tasks]);
 
-  const handleDragStart = (event: { active: { id: string | number } }) => {
+  const dropColumn = resolveDropColumn(overId, tasks);
+  const activeTask = activeId ? tasks.find((t) => t.id === activeId) : null;
+
+  const handleDragStart = (event: DragStartEvent) => {
     setActiveId(String(event.active.id));
+  };
+
+  const handleDragOver = (event: DragOverEvent) => {
+    setOverId(event.over ? String(event.over.id) : null);
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     setActiveId(null);
+    setOverId(null);
     if (!over) return;
 
     const taskId = active.id as string;
-    const newStatus = (over.data.current?.status ?? over.id) as TaskStatus;
+    const task = tasks.find((t) => t.id === taskId);
+    if (!task) return;
 
-    if (newStatus && COLUMNS.some((c) => c.status === newStatus)) {
-      const task = tasks.find((t) => t.id === taskId);
-      if (task && task.status !== newStatus) {
-        run(() => {
-          dispatch(setTaskStatus({ taskId, status: newStatus }));
-          dispatch(
-            addNotification(
-              'Task moved',
-              `"${task.title}" moved to ${newStatus}.`,
-              'success'
-            )
-          );
-        });
-      }
+    const overIsColumn = COLUMNS.some((c) => c.status === String(over.id));
+    const overTaskId = overIsColumn ? null : String(over.id);
+    const targetStatus = overTaskId
+      ? (tasks.find((t) => t.id === overTaskId)?.status ?? task.status)
+      : (over.id as TaskStatus);
+
+    if (!COLUMNS.some((c) => c.status === targetStatus)) return;
+
+    const sourceIds = tasksByStatus[task.status].map((t) => t.id);
+    const targetIds = tasksByStatus[targetStatus].map((t) => t.id);
+
+    const targetWithoutActive = targetIds.filter((id) => id !== taskId);
+    const insertAt =
+      overTaskId && overTaskId !== taskId
+        ? targetWithoutActive.indexOf(overTaskId)
+        : targetWithoutActive.length;
+    targetWithoutActive.splice(insertAt, 0, taskId);
+
+    if (
+      overTaskId === taskId ||
+      (targetWithoutActive.length === targetIds.length &&
+        targetWithoutActive.every(
+          (id, i) => i < targetIds.length && id === targetIds[i]
+        ))
+    ) {
+      return;
     }
+
+    const updates: { id: string; changes: Partial<Task> }[] = [];
+
+    if (targetStatus === task.status) {
+      targetWithoutActive.forEach((id, idx) =>
+        updates.push({ id, changes: { position: idx } })
+      );
+    } else {
+      const sourceWithoutActive = sourceIds.filter((id) => id !== taskId);
+      sourceWithoutActive.forEach((id, idx) =>
+        updates.push({ id, changes: { position: idx } })
+      );
+      targetWithoutActive.forEach((id, idx) =>
+        updates.push({
+          id,
+          changes: {
+            position: idx,
+            ...(id === taskId ? { status: targetStatus } : {}),
+          },
+        })
+      );
+    }
+
+    run(() => {
+      updates.forEach((u) => dispatch(updateTask(u)));
+      if (targetStatus !== task.status) {
+        dispatch(
+          addNotification(
+            'Task moved',
+            `"${task.title}" moved to ${targetStatus}.`,
+            'success'
+          )
+        );
+      }
+    });
   };
 
   const handleDragCancel = () => {
     setActiveId(null);
+    setOverId(null);
   };
 
   return (
@@ -264,6 +363,7 @@ function TaskKanbanPage({ onToggleView }: { onToggleView: () => void }) {
         sensors={sensors}
         collisionDetection={closestCorners}
         onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
         onDragCancel={handleDragCancel}
       >
@@ -274,11 +374,19 @@ function TaskKanbanPage({ onToggleView }: { onToggleView: () => void }) {
               col={col}
               tasks={tasksByStatus[col.status]}
               isNotEmpty={tasksByStatus[col.status].length > 0}
-              isDragging={activeId !== null}
+              isDropTarget={dropColumn === col.status}
               disabled={saving}
             />
           ))}
         </div>
+
+        <DragOverlay>
+          {activeTask ? (
+            <div className="cursor-grabbing rounded-lg border border-primary/40 bg-card p-3 shadow-2xl shadow-primary/20">
+              <TaskCard task={activeTask} />
+            </div>
+          ) : null}
+        </DragOverlay>
       </DndContext>
 
       <TaskFormModal open={formOpen} onOpenChange={setFormOpen} />
