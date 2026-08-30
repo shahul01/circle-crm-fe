@@ -2,9 +2,9 @@ import type { Customer, Lead, Task } from '@/types';
 
 const EMPLOYEE_IDS = ['emp-1', 'emp-2', 'emp-3', 'emp-4', 'emp-5'];
 
-const CUSTOMER_COUNT = 100;
-const LEAD_COUNT = 100;
-const TASK_COUNT = 100;
+export const CUSTOMER_COUNT = 50;
+const LEAD_COUNT = 50;
+const TASK_COUNT = 50;
 
 const CUSTOMER_NAMES = [
   'Acme Corporation',
