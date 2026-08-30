@@ -256,20 +256,20 @@ function TaskListPage({ onToggleView }: { onToggleView: () => void }) {
                     </TableHead>
                     <TableHead>
                       <button
-                        onClick={() => handleSort('priority')}
-                        className="hover:text-foreground"
-                      >
-                        Priority
-                        <SortIcon field="priority" sort={sort} />
-                      </button>
-                    </TableHead>
-                    <TableHead>
-                      <button
                         onClick={() => handleSort('status')}
                         className="hover:text-foreground"
                       >
                         Status
                         <SortIcon field="status" sort={sort} />
+                      </button>
+                    </TableHead>
+                    <TableHead>
+                      <button
+                        onClick={() => handleSort('priority')}
+                        className="hover:text-foreground"
+                      >
+                        Priority
+                        <SortIcon field="priority" sort={sort} />
                       </button>
                     </TableHead>
                     <TableHead className="hidden sm:table-cell">
@@ -328,13 +328,13 @@ function TaskListPage({ onToggleView }: { onToggleView: () => void }) {
                         {t.title}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={PRIORITY_BADGE[t.priority]}>
-                          {t.priority}
+                        <Badge variant={STATUS_BADGE[t.status]}>
+                          {t.status}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={STATUS_BADGE[t.status]}>
-                          {t.status}
+                        <Badge variant={PRIORITY_BADGE[t.priority]}>
+                          {t.priority}
                         </Badge>
                       </TableCell>
                       <TableCell className="hidden sm:table-cell text-muted-foreground">
