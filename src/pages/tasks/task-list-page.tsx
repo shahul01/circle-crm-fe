@@ -61,7 +61,8 @@ type SortField =
   | 'priority'
   | 'dueDate'
   | 'createdAt'
-  | 'assignedEmployeeId';
+  | 'assignedEmployeeId'
+  | 'board';
 
 function SortIcon({
   field,
@@ -271,6 +272,15 @@ function TaskListPage({ onToggleView }: { onToggleView: () => void }) {
                         <SortIcon field="status" sort={sort} />
                       </button>
                     </TableHead>
+                    <TableHead className="hidden sm:table-cell">
+                      <button
+                        onClick={() => handleSort('board')}
+                        className="hover:text-foreground"
+                      >
+                        Board
+                        <SortIcon field="board" sort={sort} />
+                      </button>
+                    </TableHead>
                     <TableHead className="hidden md:table-cell">
                       <button
                         onClick={() => handleSort('dueDate')}
@@ -326,6 +336,9 @@ function TaskListPage({ onToggleView }: { onToggleView: () => void }) {
                         <Badge variant={STATUS_BADGE[t.status]}>
                           {t.status}
                         </Badge>
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell text-muted-foreground">
+                        {t.position != null ? `#${t.position + 1}` : '—'}
                       </TableCell>
                       <TableCell className="hidden md:table-cell text-muted-foreground">
                         {t.dueDate
