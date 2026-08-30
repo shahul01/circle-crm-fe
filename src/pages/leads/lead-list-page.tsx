@@ -26,6 +26,7 @@ import { EMPLOYEES } from '@/services/employees';
 import { exportLeadsToCsv } from '@/services/csv-export';
 import { LEAD_STATUS_OPTIONS } from '@/schemas/lead';
 import { LeadFormModal } from '@/components/leads/lead-form-modal';
+import { ConvertLeadDialog } from '@/components/leads/convert-lead-dialog';
 import {
   Button,
   Card,
@@ -130,7 +131,7 @@ function LeadListPage() {
     setBulkDeleteOpen(false);
   };
 
-  const handleConvert = (lead: Lead) => {
+  const handleConvert = (lead: Lead, location: string) => {
     dispatch(markLeadConverted(lead.id));
     dispatch(
       addCustomer({
@@ -139,7 +140,7 @@ function LeadListPage() {
         email: lead.email,
         phone: lead.phone,
         company: lead.company,
-        location: '',
+        location,
         status: 'Active',
         assignedEmployeeId: lead.assignedEmployeeId,
         createdAt: new Date().toISOString(),
@@ -450,15 +451,12 @@ function LeadListPage() {
         onConfirm={handleBulkDelete}
       />
 
-      <ConfirmDialog
-        open={!!convertLead}
+      <ConvertLeadDialog
+        lead={convertLead}
         onOpenChange={(open) => {
           if (!open) setConvertLead(null);
         }}
-        title="Convert lead to customer"
-        description={`Convert "${convertLead?.name}" to a customer? This will mark the lead as Converted and create a new customer record.`}
-        confirmLabel="Convert"
-        onConfirm={() => convertLead && handleConvert(convertLead)}
+        onConvert={handleConvert}
       />
     </div>
   );
