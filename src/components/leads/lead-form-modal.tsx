@@ -1,8 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { leadSchema, LEAD_STATUS_OPTIONS, type LeadForm } from '@/schemas/lead';
+import { convertLeadSchema } from '@/components/leads/convert-lead-dialog';
 import { EMPLOYEES } from '@/services/employees';
 import { useAppDispatch } from '@/store/hooks';
 import { addLead, updateLead } from '@/store/slices/lead-slice';
@@ -45,11 +46,15 @@ export function LeadFormModal({
   const isEditing = !!lead;
   const { saving, run } = usePersistSubmit();
 
+  const [location, setLocation] = useState('');
+  const [locationError, setLocationError] = useState<string | null>(null);
+
   const {
     register,
     control,
     handleSubmit,
     reset,
+    watch,
     formState: { errors },
   } = useForm<LeadForm>({
     resolver: zodResolver(leadSchema),
@@ -65,6 +70,8 @@ export function LeadFormModal({
 
   useEffect(() => {
     if (open) {
+      setLocation('');
+      setLocationError(null);
       if (lead) {
         reset({
           name: lead.name,
@@ -87,10 +94,23 @@ export function LeadFormModal({
     }
   }, [open, lead, reset]);
 
+  const watchedStatus = watch('status');
+  const needsLocation =
+    watchedStatus === 'Converted' &&
+    (!isEditing || lead?.status !== 'Converted');
+
   const onSubmit = (data: LeadForm) => {
     const isNewConversion =
       data.status === 'Converted' &&
       (!isEditing || lead?.status !== 'Converted');
+
+    if (isNewConversion) {
+      const parsed = convertLeadSchema.safeParse({ location });
+      if (!parsed.success) {
+        setLocationError('Location is required (min 3 characters)');
+        return;
+      }
+    }
 
     void run(() => {
       if (isEditing && lead) {
@@ -127,7 +147,7 @@ export function LeadFormModal({
             email: data.email,
             phone: data.phone,
             company: data.company,
-            location: '',
+            location: location.trim(),
             status: 'Active',
             assignedEmployeeId: data.assignedEmployeeId,
             createdAt: new Date().toISOString(),
@@ -252,6 +272,25 @@ export function LeadFormModal({
                 )}
               />
             </div>
+            {needsLocation && (
+              <div className="space-y-2">
+                <Label htmlFor="lead-location">Location</Label>
+                <Input
+                  id="lead-location"
+                  disabled={saving}
+                  error={!!locationError}
+                  placeholder="e.g. New York, NY"
+                  value={location}
+                  onChange={(e) => {
+                    setLocation(e.target.value);
+                    if (locationError) setLocationError(null);
+                  }}
+                />
+                {locationError && (
+                  <p className="text-xs text-destructive">{locationError}</p>
+                )}
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="assignedEmployeeId">Assigned Employee</Label>
               <Controller

@@ -83,9 +83,16 @@ test.describe('Lead Management', () => {
     await expect(
       page.getByRole('heading', { name: 'Convert lead to customer' })
     ).toBeVisible();
+    await page.getByLabel('Location').fill('Austin, TX');
     await page.getByRole('button', { name: /convert/i }).click();
     await page.waitForURL('**/customers', { timeout: 5000 });
-    await waitForPersisted((s) => s.customers.ids.length === 16);
+    await waitForPersisted(
+      (s) =>
+        s.customers.ids.length === 16 &&
+        Object.values(s.customers.entities).some(
+          (c) => c.location === 'Austin, TX'
+        )
+    );
     await page.reload();
     await expect(
       page.getByRole('heading', { name: 'Customers' })
