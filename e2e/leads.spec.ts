@@ -99,4 +99,103 @@ test.describe('Lead Management', () => {
     ).toBeVisible();
     await expect(page.getByText('16 customers total')).toBeVisible();
   });
+
+  test('changing a lead status to Contacted must not create a customer', async ({
+    seedAndLogin,
+    page,
+    waitForPersisted,
+  }) => {
+    await seedAndLogin();
+    await page.goto('/leads');
+
+    const customerCount = () =>
+      page.evaluate(() => {
+        const raw = localStorage.getItem('circle_crm_state_v1');
+        const state = raw ? JSON.parse(raw) : null;
+        return state ? (state.customers?.ids ?? []).length : 0;
+      });
+
+    const before = await customerCount();
+
+    const firstRow = page.locator('table tbody tr').first();
+    await firstRow.locator('td').last().locator('button').first().click();
+    await expect(
+      page.getByRole('heading', { name: 'Edit Lead' })
+    ).toBeVisible();
+
+    await page.locator('#status').click();
+    await page
+      .getByRole('option', { name: 'Contacted', exact: true })
+      .first()
+      .click();
+    await page.getByRole('button', { name: 'Save Changes' }).click();
+    await expect(
+      page.getByRole('heading', { name: 'Edit Lead' })
+    ).not.toBeVisible();
+    await waitForPersisted((s) => s.customers.ids.length === before);
+
+    await page.reload();
+    expect(await customerCount()).toBe(before);
+  });
+
+  test('converting the same lead twice does not duplicate the customer', async ({
+    seedAndLogin,
+    page,
+    waitForPersisted,
+  }) => {
+    await seedAndLogin();
+    await page.goto('/leads');
+
+    const customerCount = () =>
+      page.evaluate(() => {
+        const raw = localStorage.getItem('circle_crm_state_v1');
+        const state = raw ? JSON.parse(raw) : null;
+        return state ? (state.customers?.ids ?? []).length : 0;
+      });
+
+    const SEED_CUSTOMERS = 15;
+    const leadRow = page.locator('table tbody tr').first();
+
+    await leadRow.locator('td').last().locator('button').first().click();
+    await expect(
+      page.getByRole('heading', { name: 'Edit Lead' })
+    ).toBeVisible();
+    await page.locator('#status').click();
+    await page.getByRole('option', { name: 'Converted', exact: true }).click();
+    await page.getByLabel('Location').fill('Austin, TX');
+    await page.getByRole('button', { name: 'Save Changes' }).click();
+    await page.waitForURL('**/customers', { timeout: 5000 });
+    await waitForPersisted(
+      (s) => s.customers.ids.length === SEED_CUSTOMERS + 1
+    );
+    expect(await customerCount()).toBe(SEED_CUSTOMERS + 1);
+
+    await page.goto('/leads');
+    const revertedRow = page.locator('table tbody tr').first();
+    await revertedRow.locator('td').last().locator('button').first().click();
+    await expect(
+      page.getByRole('heading', { name: 'Edit Lead' })
+    ).toBeVisible();
+    await page.locator('#status').click();
+    await page.getByRole('option', { name: 'Qualified', exact: true }).click();
+    await page.getByRole('button', { name: 'Save Changes' }).click();
+    await expect(
+      page.getByRole('heading', { name: 'Edit Lead' })
+    ).not.toBeVisible();
+    await expect(
+      revertedRow.locator('button[title="Convert to customer"]')
+    ).toBeVisible();
+
+    await revertedRow.locator('button[title="Convert to customer"]').click();
+    await expect(
+      page.getByRole('heading', { name: 'Convert lead to customer' })
+    ).toBeVisible();
+    await page.getByLabel('Location').fill('Austin, TX');
+    await page.getByRole('button', { name: /convert/i }).click();
+    await waitForPersisted(
+      (s) => s.customers.ids.length === SEED_CUSTOMERS + 1
+    );
+    await page.waitForTimeout(500);
+    expect(await customerCount()).toBe(SEED_CUSTOMERS + 1);
+  });
 });

@@ -19,10 +19,14 @@ import {
   removeManyLeads,
   markLeadConverted,
 } from '@/store/slices/lead-slice';
-import { addCustomer } from '@/store/slices/customer-slice';
+import { addCustomer, selectAllCustomers } from '@/store/slices/customer-slice';
 import { selectIsAdmin } from '@/store/slices/auth-slice';
 import { addNotification } from '@/store/slices/notification-slice';
 import { EMPLOYEES } from '@/services/employees';
+import {
+  findCustomerByEmail,
+  buildCustomerFromLead,
+} from '@/services/lead-conversion';
 import { exportLeadsToCsv } from '@/services/csv-export';
 import { LEAD_STATUS_OPTIONS } from '@/schemas/lead';
 import { LeadFormModal } from '@/components/leads/lead-form-modal';
@@ -102,6 +106,7 @@ function LeadListPage() {
   const page = useAppSelector(selectLeadPage);
   const selectedIds = useAppSelector(selectSelectedLeadIds);
   const allFiltered = useAppSelector(selectFilteredLeads);
+  const allCustomers = useAppSelector(selectAllCustomers);
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
@@ -133,29 +138,23 @@ function LeadListPage() {
 
   const handleConvert = (lead: Lead, location: string) => {
     dispatch(markLeadConverted(lead.id));
-    dispatch(
-      addCustomer({
-        id: `cust-${Date.now()}`,
-        name: lead.name,
-        email: lead.email,
-        phone: lead.phone,
-        company: lead.company,
-        location,
-        status: 'Active',
-        assignedEmployeeId: lead.assignedEmployeeId,
-        createdAt: new Date().toISOString(),
-        notes: [],
-      })
-    );
+    const existing = findCustomerByEmail(allCustomers, lead.email);
+    if (!existing) {
+      dispatch(addCustomer(buildCustomerFromLead(lead, location.trim())));
+    }
     dispatch(
       addNotification(
-        'Lead converted',
-        `${lead.name} has been added as a customer.`,
-        'success'
+        existing ? 'Lead already a customer' : 'Lead converted',
+        existing
+          ? `${lead.name} is already a customer — no duplicate was created.`
+          : `${lead.name} has been added as a customer.`,
+        existing ? 'default' : 'success'
       )
     );
     setConvertLead(null);
-    navigate('/customers');
+    if (!existing) {
+      navigate('/customers');
+    }
   };
 
   const handleExport = () => {

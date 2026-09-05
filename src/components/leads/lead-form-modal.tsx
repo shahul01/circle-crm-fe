@@ -5,9 +5,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { leadSchema, LEAD_STATUS_OPTIONS, type LeadForm } from '@/schemas/lead';
 import { convertLeadSchema } from '@/components/leads/convert-lead-dialog';
 import { EMPLOYEES } from '@/services/employees';
-import { useAppDispatch } from '@/store/hooks';
+import {
+  findCustomerByEmail,
+  buildCustomerFromLead,
+} from '@/services/lead-conversion';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { addLead, updateLead } from '@/store/slices/lead-slice';
-import { addCustomer } from '@/store/slices/customer-slice';
+import { addCustomer, selectAllCustomers } from '@/store/slices/customer-slice';
 import { addNotification } from '@/store/slices/notification-slice';
 import { usePersistSubmit } from '@/hooks/use-persist-submit';
 import type { Lead } from '@/types';
@@ -45,6 +49,7 @@ export function LeadFormModal({
   const navigate = useNavigate();
   const isEditing = !!lead;
   const { saving, run } = usePersistSubmit();
+  const allCustomers = useAppSelector(selectAllCustomers);
 
   const [location, setLocation] = useState('');
   const [locationError, setLocationError] = useState<string | null>(null);
@@ -112,6 +117,9 @@ export function LeadFormModal({
       }
     }
 
+    const leadId = isEditing && lead ? lead.id : `lead-${Date.now()}`;
+    let createdCustomer = false;
+
     void run(() => {
       if (isEditing && lead) {
         dispatch(updateLead({ id: lead.id, changes: data }));
@@ -125,7 +133,7 @@ export function LeadFormModal({
       } else {
         dispatch(
           addLead({
-            id: `lead-${Date.now()}`,
+            id: leadId,
             ...data,
             createdAt: new Date().toISOString(),
           })
@@ -140,30 +148,35 @@ export function LeadFormModal({
       }
 
       if (isNewConversion) {
-        dispatch(
-          addCustomer({
-            id: `cust-${Date.now()}`,
+        const existing = findCustomerByEmail(allCustomers, data.email);
+        if (!existing) {
+          const conversionLead: Lead = {
+            id: leadId,
             name: data.name,
             email: data.email,
             phone: data.phone,
             company: data.company,
-            location: location.trim(),
-            status: 'Active',
+            status: 'Converted',
             assignedEmployeeId: data.assignedEmployeeId,
-            createdAt: new Date().toISOString(),
-            notes: [],
-          })
-        );
+            createdAt: lead?.createdAt ?? new Date().toISOString(),
+          };
+          dispatch(
+            addCustomer(buildCustomerFromLead(conversionLead, location.trim()))
+          );
+          createdCustomer = true;
+        }
         dispatch(
           addNotification(
-            'Lead converted',
-            `${data.name} has been added as a customer.`,
-            'success'
+            existing ? 'Lead marked Converted' : 'Lead converted',
+            existing
+              ? `${data.name} is already a customer — no duplicate was created.`
+              : `${data.name} has been added as a customer.`,
+            existing ? 'default' : 'success'
           )
         );
       }
     }).then(() => {
-      if (isNewConversion) {
+      if (createdCustomer) {
         navigate('/customers');
       }
       onOpenChange(false);
